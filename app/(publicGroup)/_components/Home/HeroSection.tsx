@@ -8,7 +8,7 @@ import { ArrowRight, ShieldCheck, Star, Users } from "lucide-react";
 const HeroSection = () => {
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-blue-100">
-      <div className="container mx-auto px-4 py-16 lg:py-24 w-7xl ">
+      <div className="container mx-auto px-4 py-16 lg:py-24 md:w-7xl ">
         <div className="grid items-center gap-10 lg:grid-cols-2">
           {/* Left Content */}
           <div className="space-y-6">
