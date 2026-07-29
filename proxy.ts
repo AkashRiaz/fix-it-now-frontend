@@ -7,7 +7,7 @@ import { cookies } from "next/headers";
 
 const AUTH_ROUTES = ["/login", "/register"];
 
-// const PUBLIC_ROUTES = ["/", "/news"];
+const PUBLIC_ROUTES = ["/"];
 
 // This function can be marked `async` if using `await` inside
 export async function proxy(request: NextRequest) {
@@ -34,25 +34,25 @@ export async function proxy(request: NextRequest) {
       )
     : null;
 
-//   if (!decodedAccessToken?.success && decodedRefreshToken?.success) {
-//     const result = await getNewAccessToken();
+  //   if (!decodedAccessToken?.success && decodedRefreshToken?.success) {
+  //     const result = await getNewAccessToken();
 
-//     if (result.success && result.data) {
-//       const newAccessToken = result.data.accessToken;
-//       // console.log(newAccessToken, "newAccessToken");
-//       cookieStore.set("accessToken", newAccessToken, {
-//         httpOnly: true,
-//         maxAge: 60 * 60 * 24, // 1 day
-//         sameSite: "lax",
-//       });
+  //     if (result.success && result.data) {
+  //       const newAccessToken = result.data.accessToken;
+  //       // console.log(newAccessToken, "newAccessToken");
+  //       cookieStore.set("accessToken", newAccessToken, {
+  //         httpOnly: true,
+  //         maxAge: 60 * 60 * 24, // 1 day
+  //         sameSite: "lax",
+  //       });
 
-//       accessToken = newAccessToken;
-//       decodedAccessToken = jwtUtils.verifyToken(
-//         accessToken!,
-//         process.env.JWT_ACCESS_SECRET as string,
-//       );
-//     }
-//   }
+  //       accessToken = newAccessToken;
+  //       decodedAccessToken = jwtUtils.verifyToken(
+  //         accessToken!,
+  //         process.env.JWT_ACCESS_SECRET as string,
+  //       );
+  //     }
+  //   }
 
   let userRole = null;
 
@@ -70,28 +70,29 @@ export async function proxy(request: NextRequest) {
     if (userRole === "ADMIN") {
       return NextResponse.redirect(new URL("/admin-dashboard", request.url));
     } else if (userRole === "TECHNICIAN") {
-      return NextResponse.redirect(new URL("/technician-dashboard", request.url));
+      return NextResponse.redirect(
+        new URL("/technician-dashboard", request.url),
+      );
     } else if (userRole === "CUSTOMER") {
       return NextResponse.redirect(new URL("/dashboard", request.url));
     }
   }
 
-//   const isPublicRoute = PUBLIC_ROUTES.some(
-//     (route) => pathName === route || pathName.startsWith(route + "/"),
-//   );
+    const isPublicRoute = PUBLIC_ROUTES.some(
+      (route) => pathName === route || pathName.startsWith(route + "/"),
+    );
 
   const isAuthRoute = AUTH_ROUTES.some(
     (route) => pathName === route || pathName.startsWith(route + "/"),
   );
 
-     if(!accessToken &&  !isAuthRoute){
-        const loginUrl = new URL('/login', request.url)
+  if (!accessToken && !isPublicRoute && !isAuthRoute) {
+    const loginUrl = new URL("/login", request.url);
 
-        loginUrl.searchParams.set("redirectTo", pathName)
+    loginUrl.searchParams.set("redirectTo", pathName);
 
-        return NextResponse.redirect(loginUrl);
-    }
-
+    return NextResponse.redirect(loginUrl);
+  }
 
   if (pathName.startsWith("/dashboard") && userRole !== "CUSTOMER") {
     return NextResponse.redirect(new URL("/not-found", request.url));
@@ -104,16 +105,16 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL("/not-found", request.url));
   }
 
-//   if (pathName === "/premium") {
-//     const subscriptionStatus = await getSubscriptionStatus();
-//     const isActive = Boolean(
-//       subscriptionStatus?.success && subscriptionStatus.data?.isSubscribed,
-//     );
+  //   if (pathName === "/premium") {
+  //     const subscriptionStatus = await getSubscriptionStatus();
+  //     const isActive = Boolean(
+  //       subscriptionStatus?.success && subscriptionStatus.data?.isSubscribed,
+  //     );
 
-//     if (!isActive) {
-//       return NextResponse.redirect(new URL("/payment", request.url));
-//     }
-//   }
+  //     if (!isActive) {
+  //       return NextResponse.redirect(new URL("/payment", request.url));
+  //     }
+  //   }
 
   return NextResponse.next();
 }
