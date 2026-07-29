@@ -14,6 +14,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
 import { IUser} from "@/lib/type";
+import { logout } from "@/service/logout";
 
 // Navigation items configuration
 const navItems = [
@@ -40,7 +41,7 @@ export function Navbar({ user }: NavbarProps) {
   const router = useRouter();
   const handleUserMenuAction = async (action: string) => {
     if (action === "logout") {
-    //   await logout();
+      await logout();
       toast.success("User Logged Out Successfully!");
       router.push("/login");
     }
