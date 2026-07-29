@@ -50,16 +50,13 @@ export const registerAction = async (
     role,
   };
 
-  const res = await fetch(
-    `https://fix-it-now-app.vercel.app/api/users/register`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
+  const res = await fetch(`${process.env.BACKEND_API_URL}/users/register`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
     },
-  );
+    body: JSON.stringify(payload),
+  });
 
   const result = await res.json();
 
