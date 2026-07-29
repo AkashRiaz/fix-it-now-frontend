@@ -37,6 +37,18 @@ const LoginForm = () => {
     });
   };
 
+  useEffect(() => {
+    if (!state) return;
+
+    if (state.success) {
+      toast.success(state.message || "Login successful");
+      // router.push("/dashboard");
+    }
+    if (!state.success) {
+      toast.error(state.message || "Something went wrong");
+    }
+  }, [state]);
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <Card className="p-6 space-y-4">

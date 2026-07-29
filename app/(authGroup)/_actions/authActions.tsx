@@ -14,6 +14,61 @@ type LoginState = {
   } | null;
 };
 
+export type RegisterState = {
+  success: boolean;
+  statusCode: number;
+  message: string;
+  data: {
+    id: string;
+    name: string;
+    email: string;
+    phone: string;
+    role: "CUSTOMER" | "TECHNICIAN" | "ADMIN";
+    status: "ACTIVE" | "INACTIVE";
+    createdAt: string;
+    updatedAt: string;
+  } | null;
+};
+
+export const registerAction = async (
+  prevState: RegisterState,
+  formData: FormData,
+) => {
+  const name = formData.get("name") as string;
+  const email = formData.get("email") as string;
+  const password = formData.get("password") as string;
+  const phone = formData.get("phone") as string;
+  const role = formData.get("role") as "CUSTOMER" | "TECHNICIAN";
+  //   console.log(role, "role-----");
+  //   console.log(name, email, password, phone, role);
+
+  const payload = {
+    name,
+    email,
+    password,
+    phone,
+    role,
+  };
+
+  const res = await fetch(
+    `https://fix-it-now-app.vercel.app/api/users/register`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    },
+  );
+
+  const result = await res.json();
+
+  if (result?.success) {
+    redirect("/login");
+  }
+  return result;
+};
+
 export const loginActions = async (
   prevState: LoginState | null,
   formData: FormData,
@@ -37,7 +92,6 @@ export const loginActions = async (
   const result = await res.json();
 
   if (result?.success) {
-
     const cookieStore = await cookies();
 
     cookieStore.set("accessToken", result.data.accessToken, {
