@@ -7,6 +7,8 @@ import TopTechniciansSection from "./_components/Home/TopTechniciansSection";
 import { getTopTechniciansAction } from "./_actions/getTopTechniciansAction";
 import WhyChooseUsSection from "./_components/Home/WhyChooseUsSection";
 import HowItWorksSection from "./_components/Home/HowItWorksSection";
+import CustomerReviewsSection from "./_components/Home/CustomerReviewsSection";
+import CTASection from "./_components/Home/CTASection";
 
 export default async function HomePage() {
   const getCategories = await getCategoryAction();
@@ -20,6 +22,8 @@ export default async function HomePage() {
       <TopTechniciansSection technicians={topTechnicians?.data || []} />
       <WhyChooseUsSection />
       <HowItWorksSection />
+      <CustomerReviewsSection />
+      <CTASection/>
     </div>
   );
 }

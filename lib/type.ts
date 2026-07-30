@@ -52,3 +52,77 @@ export type ISidebarItem = {
     Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>
   >;
 };
+
+export interface IService {
+  id: string;
+
+  title: string;
+
+  description: string;
+
+  price: number;
+
+  duration: number;
+
+  isFeatured: boolean;
+
+  technicianId: string;
+
+  categoryId: string;
+
+  createdAt: string;
+
+  updatedAt: string;
+
+  category: {
+    id: string;
+
+    name: string;
+
+    createdAt: string;
+
+    updatedAt: string;
+  };
+
+  technician: {
+    id: string;
+
+    userId: string;
+
+    bio: string | null;
+
+    experience: string;
+
+    location: string;
+
+    hourlyRate: number | null;
+
+    averageRating: number;
+
+    totalReviews: number;
+
+    completedJobs: number;
+
+    createdAt: string;
+
+    updatedAt: string;
+
+    user: {
+      id: string;
+
+      name: string;
+
+      email: string;
+
+      phone: string;
+
+      role: "CUSTOMER" | "TECHNICIAN" | "ADMIN";
+
+      status: "ACTIVE" | "INACTIVE";
+
+      createdAt: string;
+
+      updatedAt: string;
+    };
+  };
+}

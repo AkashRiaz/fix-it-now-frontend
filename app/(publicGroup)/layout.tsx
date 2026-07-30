@@ -1,3 +1,4 @@
+import Footer from "@/components/shared/Footer";
 import { Navbar } from "@/components/shared/navbar";
 import { getMe } from "@/service/getMe";
 import React from "react";
@@ -12,6 +13,7 @@ const PublicGroupLayout = async ({
     <div>
       <Navbar user={user} />
       {children}
+      <Footer />
     </div>
   );
 };

@@ -8,29 +8,67 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, Settings, User, LayoutDashboard } from "lucide-react";
+
+import {
+  LogOut,
+  Settings,
+  User,
+  LayoutDashboard,
+  Wrench,
+  CalendarCheck,
+} from "lucide-react";
+
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+
 import { Button } from "../ui/button";
-import { IUser} from "@/lib/type";
+import { IUser } from "@/lib/type";
 import { logout } from "@/service/logout";
 
-// Navigation items configuration
 const navItems = [
-  { label: "Home", href: "/" },
-  { label: "About", href: "/about" },
-  { label: "Services", href: "/services" },
-  { label: "Contact", href: "/contact" },
-  { label: "News", href: "/news" },
-  { label: "Premium", href: "/premium" },
+  {
+    label: "Home",
+    href: "/",
+  },
+  {
+    label: "Services",
+    href: "/services",
+  },
+  {
+    label: "Technicians",
+    href: "/technicians",
+  },
+  {
+    label: "How It Works",
+    href: "/#how-it-works",
+  },
+  {
+    label: "Become Technician",
+    href: "/technician/register",
+  },
+  {
+    label: "Contact",
+    href: "/contact",
+  },
 ];
 
-// User menu items configuration
 const userMenuItems = [
-  { label: "Dashboard", icon: LayoutDashboard, action: "dashboard" },
-  { label: "Profile", icon: User, action: "profile" },
-  { label: "Settings", icon: Settings, action: "settings" },
+  {
+    label: "Dashboard",
+    icon: LayoutDashboard,
+    action: "dashboard",
+  },
+  {
+    label: "Profile",
+    icon: User,
+    action: "profile",
+  },
+  {
+    label: "Settings",
+    icon: Settings,
+    action: "settings",
+  },
 ];
 
 type NavbarProps = {
@@ -39,12 +77,16 @@ type NavbarProps = {
 
 export function Navbar({ user }: NavbarProps) {
   const router = useRouter();
+
   const handleUserMenuAction = async (action: string) => {
     if (action === "logout") {
       await logout();
+
       toast.success("User Logged Out Successfully!");
+
       router.push("/login");
     }
+
     if (action === "dashboard") {
       if (user.data.role === "CUSTOMER") {
         router.push("/dashboard");
@@ -54,94 +96,219 @@ export function Navbar({ user }: NavbarProps) {
         router.push("/admin-dashboard");
       }
     }
-
-    // if (action === "profile") {
-    //   if (user.data.role === "CUSTOMER") {
-    //     router.push("/dashboard/profile");
-    //   } else if (user.data.role === "TECHNICIAN") {
-    //     router.push("/technician-dashboard/profile");
-    //   } else if (user.data.role === "ADMIN") {
-    //     router.push("/admin-dashboard/profile");
-    //   }
-    // }
   };
 
   return (
-    <nav className="border-b border-border">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+    <header
+      className="
+        sticky
+        top-0
+        z-50
+        border-b
+        bg-white/80
+        backdrop-blur-lg
+      "
+    >
+      <nav>
+        <div
+          className="
+            mx-auto
+            flex
+            h-18
+            max-w-7xl
+            items-center
+            justify-between
+            px-4
+            sm:px-6
+            lg:px-8
+          "
+        >
           {/* Logo */}
-          <Link href="/" className="shrink-0">
-            <span className="text-2xl font-bold text-primary">
-              FixItNow
-            </span>
+          <Link
+            href="/"
+            className="
+              flex
+              items-center
+              gap-2
+            "
+          >
+            <div
+              className="
+                flex
+                h-10
+                w-10
+                items-center
+                justify-center
+                rounded-xl
+                bg-primary
+                text-white
+              "
+            >
+              <Wrench size={22} />
+            </div>
+
+            <div>
+              <span
+                className="
+                  text-2xl
+                  font-extrabold
+                  tracking-tight
+                  text-primary
+                "
+              >
+                FixItNow
+              </span>
+
+              <p
+                className="
+                  hidden
+                  text-[11px]
+                  text-muted-foreground
+                  sm:block
+                "
+              >
+                Trusted Home Services
+              </p>
+            </div>
           </Link>
 
-          {/* Nav Links */}
-          <div className="hidden md:absolute md:left-1/2 md:transform md:-translate-x-1/2 md:flex md:items-center md:gap-8">
+          {/* Navigation */}
+          <div
+            className="
+              hidden
+              lg:flex
+              items-center
+              gap-8
+            "
+          >
             {navItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="text-foreground hover:text-primary transition-colors text-sm font-medium"
+                className="
+                  text-sm
+                  font-medium
+                  text-gray-700
+                  transition
+                  hover:text-primary
+                "
               >
                 {item.label}
               </Link>
             ))}
           </div>
 
-          {/* User Dropdown */}
-          {user.success ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <div className="cursor-pointer">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                    <User className="w-4 h-4 text-primary" />
-                  </div>
-                </div>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel className="font-normal">
-                  <div className="flex flex-col gap-1">
-                    <p className="text-sm font-medium">
-                      {user.data?.name}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {user.data?.email}
-                    </p>
-                  </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                {userMenuItems.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <DropdownMenuItem
-                      key={item.action}
-                      onClick={() => handleUserMenuAction(item.action)}
-                    >
-                      <Icon className="w-4 h-4 mr-2" />
-                      <span>{item.label}</span>
-                    </DropdownMenuItem>
-                  );
-                })}
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={async () => {
-                    await handleUserMenuAction("logout");
-                  }}
+          {/* Right Section */}
+          <div className="flex items-center gap-3">
+            {!user.success ? (
+              <Link href="/login">
+                <Button
+                  className="
+                    rounded-full
+                    px-6
+                    font-semibold
+                    shadow-md
+                  "
                 >
-                  <LogOut className="w-4 h-4 mr-2" />
-                  <span>Log out</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          ) : (
-            <Link href={"/login"}>
-              <Button className="cursor-pointer">Login</Button>
-            </Link>
-          )}
+                  Login
+                </Button>
+              </Link>
+            ) : (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className="
+                      flex
+                      h-10
+                      w-10
+                      items-center
+                      justify-center
+                      rounded-full
+                      bg-primary/10
+                      transition
+                      hover:bg-primary/20
+                    "
+                  >
+                    <User
+                      className="
+                        h-5
+                        w-5
+                        text-primary
+                      "
+                    />
+                  </button>
+                </DropdownMenuTrigger>
+
+                <DropdownMenuContent align="end" className="w-60 rounded-xl">
+                  <DropdownMenuLabel>
+                    <div className="space-y-1">
+                      <p className="font-semibold">{user.data.name}</p>
+
+                      <p className="text-xs text-muted-foreground">
+                        {user.data.email}
+                      </p>
+
+                      <span
+                        className="
+                          inline-block
+                          rounded-full
+                          bg-primary/10
+                          px-2
+                          py-1
+                          text-xs
+                          text-primary
+                        "
+                      >
+                        {user.data.role}
+                      </span>
+                    </div>
+                  </DropdownMenuLabel>
+
+                  <DropdownMenuSeparator />
+
+                  {userMenuItems.map((item) => {
+                    const Icon = item.icon;
+
+                    return (
+                      <DropdownMenuItem
+                        key={item.action}
+                        onClick={() => handleUserMenuAction(item.action)}
+                        className="cursor-pointer"
+                      >
+                        <Icon
+                          className="
+                            mr-2
+                            h-4
+                            w-4
+                          "
+                        />
+
+                        {item.label}
+                      </DropdownMenuItem>
+                    );
+                  })}
+
+                  <DropdownMenuSeparator />
+
+                  <DropdownMenuItem
+                    className="cursor-pointer text-red-600"
+                    onClick={() => handleUserMenuAction("logout")}
+                  >
+                    <LogOut
+                      className="
+                        mr-2
+                        h-4
+                        w-4
+                      "
+                    />
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+          </div>
         </div>
-      </div>
-    </nav>
+      </nav>
+    </header>
   );
 }
