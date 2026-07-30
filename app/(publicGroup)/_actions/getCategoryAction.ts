@@ -1,3 +1,4 @@
+"use server";
 export const getCategoryAction = async () => {
   const res = await fetch(`${process.env.BACKEND_API_URL}/category`, {
     method: "GET",

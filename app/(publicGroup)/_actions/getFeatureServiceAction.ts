@@ -1,3 +1,4 @@
+"use server";
 export const getFeatureServiceAction = async () => {
   const res = await fetch(`${process.env.BACKEND_API_URL}/service/featured`, {
     method: "GET",
