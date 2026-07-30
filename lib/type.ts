@@ -126,3 +126,12 @@ export interface IService {
     };
   };
 }
+
+export type BookingStatus =
+  | "REQUESTED"
+  | "ACCEPTED"
+  | "PAID"
+  | "IN_PROGRESS"
+  | "COMPLETED"
+  | "CANCELLED"
+  | "DECLINED";

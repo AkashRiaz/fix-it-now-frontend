@@ -10,13 +10,47 @@ const DashboardGroupLayout = async ({
   children: React.ReactNode;
 }) => {
   const user = await getMe();
+
   return (
-    <div>
+    <div
+      className="
+        flex
+        h-screen
+        flex-col
+        overflow-hidden
+      "
+    >
+      {/* Navbar */}
       <Navbar user={user} />
-      <SidebarProvider>
-        <div className="flex flex-1">
+
+      {/* Dashboard Area */}
+      <SidebarProvider
+        className="
+          flex-1
+          overflow-hidden
+        "
+      >
+        <div
+          className="
+            flex
+            flex-1
+            overflow-hidden
+          "
+        >
+          {/* Sidebar */}
           <DashboardSidebar user={user} />
-          <main className="flex-1 min-w-0">{children}</main>
+
+          {/* Main Content */}
+          <main
+            className="
+              flex-1
+              min-w-0
+              overflow-y-auto
+              bg-background
+            "
+          >
+            {children}
+          </main>
         </div>
       </SidebarProvider>
     </div>

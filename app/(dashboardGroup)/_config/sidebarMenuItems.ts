@@ -12,8 +12,8 @@ const CUSTOMER_SIDEBAR_ITEMS : ISidebarItem[] = [
         icon : LayoutDashboard
     },
     {
-        label : "My Posts",
-        href : "/dashboard/my-posts",
+        label : "Bookings",
+        href : "/dashboard/bookings",
         icon : FileText
     },
 ]

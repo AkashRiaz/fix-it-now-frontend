@@ -129,8 +129,8 @@ export function ServiceCard({ service }: { service: IService }) {
           </p>
         </div>
 
-        <Link href={`/services/${service.id}`}>
-          <Button>View Details</Button>
+        <Link href={`/technicians/${service.technician.id}`}>
+          <Button>View Profile</Button>
         </Link>
       </div>
     </div>
