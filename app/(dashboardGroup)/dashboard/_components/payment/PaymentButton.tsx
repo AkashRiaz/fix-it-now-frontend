@@ -1,27 +1,32 @@
- 
-"use client"
+"use client";
 
 import { Button } from "@/components/ui/button";
 import { useActionState, useEffect } from "react";
 import { toast } from "sonner";
 import { makePayment } from "../../_actions/makePayment";
 
-export function PaymentButton() {
-    const [state, action, pending] = useActionState(makePayment, null);
+interface PaymentButtonProps {
+  bookingId: string;
+}
 
-    useEffect(() => {
-        if (!state) return;
+export function PaymentButton({ bookingId }: PaymentButtonProps) {
+  const [state, action, pending] = useActionState(makePayment, null);
 
-        if (!state.success) {
-            toast.error(state.message || "Failed to start checkout");
-        }
-    }, [state]);
+  useEffect(() => {
+    if (!state) return;
 
-    return (
-        <form action={action}>
-            <Button type="submit" disabled={pending} className="w-full">
-                {pending ? "Redirecting..." : "Subscribe Now"}
-            </Button>
-        </form>
-    )
+    if (!state.success) {
+      toast.error(state.message || "Failed to start checkout");
+    }
+  }, [state]);
+
+  return (
+    <form action={action}>
+      <input type="hidden" name="bookingId" value={bookingId} />
+
+      <Button type="submit" disabled={pending} className="w-full">
+        {pending ? "Processing..." : "Pay Now"}
+      </Button>
+    </form>
+  );
 }

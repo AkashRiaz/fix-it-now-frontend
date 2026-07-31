@@ -7,6 +7,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useDataTableStyles } from "@/hooks/useDataTableStyles";
 import ReviewModal from "./ReviewModal";
+import { PaymentButton } from "../payment/PaymentButton";
 
 type BookingStatus =
   | "PENDING"
@@ -62,11 +63,9 @@ interface BookingTableProps {
 const BookingTable = ({ data }: BookingTableProps) => {
   const customTableStyles = useDataTableStyles();
 
-  const [selectedBooking, setSelectedBooking] =
-    useState<Booking | null>(null);
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
 
-  const [reviewModalOpen, setReviewModalOpen] =
-    useState(false);
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
 
   const handleOpenReview = (booking: Booking) => {
     setSelectedBooking(booking);
@@ -129,7 +128,7 @@ const BookingTable = ({ data }: BookingTableProps) => {
       center: true,
       cell: (row) => (
         <span className="font-semibold text-slate-900">
-          ৳{Number(row.totalPrice || 0).toLocaleString()}
+          ${Number(row.totalPrice || 0).toLocaleString()}
         </span>
       ),
     },
@@ -152,10 +151,7 @@ const BookingTable = ({ data }: BookingTableProps) => {
       center: true,
       grow: 1.2,
       cell: (row) => {
-        if (
-          row.status === "PENDING" ||
-          row.status === "REQUESTED"
-        ) {
+        if (row.status === "PENDING" || row.status === "REQUESTED") {
           return (
             <span className="text-xs text-slate-500">
               Waiting for technician
@@ -164,14 +160,7 @@ const BookingTable = ({ data }: BookingTableProps) => {
         }
 
         if (row.status === "ACCEPTED") {
-          return (
-            <Button
-              size="sm"
-              className="bg-blue-600 text-white hover:bg-blue-700"
-            >
-              Pay Now
-            </Button>
-          );
+          return <PaymentButton bookingId={row.id} />;
         }
 
         if (row.status === "PAID") {
