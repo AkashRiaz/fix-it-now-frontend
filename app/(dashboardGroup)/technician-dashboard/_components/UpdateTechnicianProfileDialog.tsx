@@ -1,11 +1,16 @@
 "use client";
 
+import Image from "next/image";
 import {
   FormEvent,
   useState,
   useTransition,
 } from "react";
-import { Pencil } from "lucide-react";
+import {
+  ImageIcon,
+  Pencil,
+  UserRound,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -21,6 +26,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+
 import { updateTechnicianProfileAction } from "../_actions/myProfileAction";
 
 export type TechnicianProfileDetails = {
@@ -30,6 +36,7 @@ export type TechnicianProfileDetails = {
   experience: string | null;
   location: string | null;
   hourlyRate: number | null;
+  profilePhoto: string | null;
   averageRating: number;
   totalReviews: number;
   completedJobs: number;
@@ -46,6 +53,9 @@ export function UpdateTechnicianProfileDialog({
 }: UpdateTechnicianProfileDialogProps) {
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
+
+  const [profilePhotoPreview, setProfilePhotoPreview] =
+    useState(profileData?.profilePhoto || "");
 
   const handleSubmit = (
     event: FormEvent<HTMLFormElement>,
@@ -88,6 +98,12 @@ export function UpdateTechnicianProfileDialog({
   const handleOpenChange = (value: boolean) => {
     if (pending) return;
 
+    if (value) {
+      setProfilePhotoPreview(
+        profileData?.profilePhoto || "",
+      );
+    }
+
     setOpen(value);
   };
 
@@ -103,7 +119,7 @@ export function UpdateTechnicianProfileDialog({
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>
             Update Technician Profile
@@ -119,6 +135,55 @@ export function UpdateTechnicianProfileDialog({
           onSubmit={handleSubmit}
           className="space-y-5"
         >
+          <div className="space-y-3">
+            <Label htmlFor="profilePhoto">
+              Profile Photo URL
+            </Label>
+
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+              <div className="relative flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-full border bg-muted">
+                {profilePhotoPreview ? (
+                  <Image
+                    src={profilePhotoPreview}
+                    alt="Technician profile preview"
+                    fill
+                    unoptimized
+                    className="object-cover"
+                  />
+                ) : (
+                  <UserRound className="h-10 w-10 text-muted-foreground" />
+                )}
+              </div>
+
+              <div className="w-full space-y-2">
+                <div className="relative">
+                  <ImageIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+
+                  <Input
+                    id="profilePhoto"
+                    name="profilePhoto"
+                    type="url"
+                    defaultValue={
+                      profileData?.profilePhoto || ""
+                    }
+                    placeholder="https://example.com/profile-photo.jpg"
+                    className="pl-9"
+                    disabled={pending}
+                    onChange={(event) =>
+                      setProfilePhotoPreview(
+                        event.target.value,
+                      )
+                    }
+                  />
+                </div>
+
+                <p className="text-xs text-muted-foreground">
+                  Enter a public image URL.
+                </p>
+              </div>
+            </div>
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="bio">
               Professional Bio
@@ -174,7 +239,7 @@ export function UpdateTechnicianProfileDialog({
 
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-500">
-                $
+                ৳
               </span>
 
               <Input

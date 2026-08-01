@@ -1,46 +1,157 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// _components/technicians/TechnicianServices.tsx
-
 "use client";
 
 import { useState } from "react";
+import {
+  Clock3,
+  Tag,
+  Wrench,
+} from "lucide-react";
+
+import { Button } from "@/components/ui/button";
 import { BookingModal } from "./BookingModal";
 
-export function TechnicianServices({ services, technician }: any) {
-  const [selectedService, setSelectedService] = useState<any>(null);
+export function TechnicianServices({
+  services = [],
+  technician,
+}: any) {
+  const [selectedService, setSelectedService] =
+    useState<any>(null);
+
+  const [bookingOpen, setBookingOpen] =
+    useState(false);
+
+  const handleOpenBooking = (service: any) => {
+    setSelectedService(service);
+    setBookingOpen(true);
+  };
+
+  const handleCloseBooking = () => {
+    setBookingOpen(false);
+    setSelectedService(null);
+  };
+
+  if (!services.length) {
+    return (
+      <section>
+        <h2 className="mb-5 text-2xl font-bold text-slate-900">
+          Services Offered
+        </h2>
+
+        <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-6 py-12 text-center">
+          <Wrench className="mx-auto h-10 w-10 text-slate-300" />
+
+          <h3 className="mt-4 font-semibold text-slate-900">
+            No services available
+          </h3>
+
+          <p className="mt-1 text-sm text-slate-500">
+            This technician has not added any services yet.
+          </p>
+        </div>
+      </section>
+    );
+  }
 
   return (
-    <div>
-      <h2 className="mb-5 text-2xl font-bold">Services Offered</h2>
+    <section>
+      <div className="mb-5">
+        <h2 className="text-2xl font-bold text-slate-900">
+          Services Offered
+        </h2>
+
+        <p className="mt-1 text-sm text-muted-foreground">
+          Choose a service and select an available booking slot.
+        </p>
+      </div>
 
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {services.map((service: any) => (
-          <div key={service.id} className="rounded-xl border p-5 shadow-sm">
-            <h3 className="font-bold">{service.title}</h3>
+          <article
+            key={service.id}
+            className="flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="rounded-xl bg-primary/10 p-3 text-primary">
+                <Wrench className="h-5 w-5" />
+              </div>
 
-            <p className="mt-2 text-sm text-muted-foreground">
-              {service.category.name}
+              {service.isFeatured && (
+                <span className="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700">
+                  Featured
+                </span>
+              )}
+            </div>
+
+            <h3 className="mt-4 text-lg font-bold text-slate-900">
+              {service.title}
+            </h3>
+
+            <div className="mt-2 flex items-center gap-2 text-sm text-slate-500">
+              <Tag className="h-4 w-4 text-primary" />
+
+              <span>
+                {service.category?.name || "Uncategorized"}
+              </span>
+            </div>
+
+            <p className="mt-3 line-clamp-3 min-h-[66px] text-sm leading-6 text-slate-600">
+              {service.description ||
+                "No service description has been provided."}
             </p>
 
-            <p className="mt-3 font-bold">৳{service.price}</p>
+            <div className="mt-4 flex items-center gap-2 text-sm text-slate-500">
+              <Clock3 className="h-4 w-4 text-primary" />
 
-            <button
-              onClick={() => setSelectedService(service)}
-              className="mt-5 w-full rounded-xl bg-primary px-4 py-3 text-white"
-            >
-              Book Now
-            </button>
-          </div>
+              <span>
+                {service.duration
+                  ? `${service.duration} minutes`
+                  : "Duration not specified"}
+              </span>
+            </div>
+
+            <div className="mt-auto pt-5">
+              <div className="mb-4 flex items-end justify-between rounded-xl bg-slate-50 p-4">
+                <div>
+                  <p className="text-xs text-slate-500">
+                    Service price
+                  </p>
+
+                  <p className="mt-1 text-xl font-bold text-slate-900">
+                    $
+                    {Number(
+                      service.price || 0,
+                    ).toLocaleString()}
+                  </p>
+                </div>
+
+                <span className="text-xs text-slate-500">
+                  Starting price
+                </span>
+              </div>
+
+              <Button
+                type="button"
+                className="w-full"
+                onClick={() =>
+                  handleOpenBooking(service)
+                }
+              >
+                Book Service
+              </Button>
+            </div>
+          </article>
         ))}
       </div>
 
-      {selectedService && (
+      {bookingOpen && selectedService && (
         <BookingModal
+          open={bookingOpen}
           service={selectedService}
           technician={technician}
-          onClose={() => setSelectedService(null)}
+          onClose={handleCloseBooking}
         />
       )}
-    </div>
+    </section>
   );
 }

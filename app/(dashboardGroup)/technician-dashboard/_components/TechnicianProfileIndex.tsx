@@ -1,3 +1,4 @@
+import Image from "next/image";
 import type { ReactNode } from "react";
 import {
   BadgeCheck,
@@ -31,6 +32,7 @@ type TechnicianProfile = {
   experience: string | null;
   location: string | null;
   hourlyRate: number | null;
+  profilePhoto: string | null;
   averageRating: number;
   totalReviews: number;
   completedJobs: number;
@@ -43,9 +45,9 @@ type TechnicianData = {
   id: string;
   name: string;
   email: string;
-  phone: string;
+  phone: string | null;
   role: "CUSTOMER" | "TECHNICIAN" | "ADMIN";
-  status: "ACTIVE" | "INACTIVE";
+  status: "ACTIVE" | "BLOCKED";
   createdAt: string;
   updatedAt: string;
   technicianProfile?: TechnicianProfile | null;
@@ -85,11 +87,28 @@ const formatTime = (value: string) => {
   });
 };
 
+const formatDate = (value?: string | null) => {
+  if (!value) {
+    return "N/A";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "N/A";
+  }
+
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+};
+
 const TechnicianProfileIndex = ({
   profileData,
 }: TechnicianProfileIndexProps) => {
   const technicianData = profileData?.data;
-
   const technicianProfile = technicianData?.technicianProfile;
 
   if (!technicianData) {
@@ -104,13 +123,7 @@ const TechnicianProfileIndex = ({
 
   const { name, email, phone, role, status, createdAt } = technicianData;
 
-  const formattedJoinedDate = createdAt
-    ? new Date(createdAt).toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      })
-    : "N/A";
+  const formattedJoinedDate = formatDate(createdAt);
 
   const initials =
     name
@@ -120,6 +133,8 @@ const TechnicianProfileIndex = ({
       .join("")
       .slice(0, 2)
       .toUpperCase() || "T";
+
+  const isActive = status === "ACTIVE";
 
   return (
     <div className="space-y-6">
@@ -137,13 +152,27 @@ const TechnicianProfileIndex = ({
         <div className="relative px-5 pb-7 sm:px-8">
           <div className="-mt-14 flex flex-col gap-5 sm:-mt-16 sm:flex-row sm:items-end sm:justify-between">
             <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-end">
-              <div className="relative flex h-28 w-28 items-center justify-center rounded-full border-4 border-white bg-indigo-600 text-3xl font-bold text-white shadow-md sm:h-36 sm:w-36 sm:text-4xl">
-                {initials}
+              <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-full border-4 border-white bg-indigo-600 shadow-md sm:h-36 sm:w-36">
+                {technicianProfile?.profilePhoto ? (
+                  <Image
+                    src={technicianProfile.profilePhoto}
+                    alt={`${name}'s profile photo`}
+                    fill
+                    sizes="(max-width: 640px) 112px, 144px"
+                    className="object-cover"
+                    unoptimized
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center text-3xl font-bold text-white sm:text-4xl">
+                    {initials}
+                  </div>
+                )}
 
                 <span
-                  className={`absolute bottom-2 right-2 h-4 w-4 rounded-full border-2 border-white ${
-                    status === "ACTIVE" ? "bg-emerald-500" : "bg-slate-400"
+                  className={`absolute bottom-2 right-2 z-10 h-4 w-4 rounded-full border-2 border-white ${
+                    isActive ? "bg-emerald-500" : "bg-rose-500"
                   }`}
+                  title={`Status: ${status}`}
                 />
               </div>
 
@@ -158,12 +187,13 @@ const TechnicianProfileIndex = ({
 
             <span
               className={`mb-2 inline-flex w-fit items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold ${
-                status === "ACTIVE"
+                isActive
                   ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                  : "border-slate-200 bg-slate-100 text-slate-600"
+                  : "border-rose-200 bg-rose-50 text-rose-700"
               }`}
             >
               <BadgeCheck className="h-4 w-4" />
+
               {status}
             </span>
           </div>
@@ -213,7 +243,7 @@ const TechnicianProfileIndex = ({
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <StatisticCard
           label="Average Rating"
-          value={(technicianProfile?.averageRating || 0).toFixed(1)}
+          value={Number(technicianProfile?.averageRating || 0).toFixed(1)}
           icon={<Star className="h-5 w-5 fill-amber-400 text-amber-400" />}
         />
 
@@ -301,7 +331,12 @@ const ProfileInfoCard = ({ icon, label, value }: ProfileInfoCardProps) => (
     <div className="min-w-0">
       <p className="text-xs font-medium text-slate-500">{label}</p>
 
-      <p className="truncate text-sm font-semibold text-slate-800">{value}</p>
+      <p
+        title={value}
+        className="truncate text-sm font-semibold text-slate-800"
+      >
+        {value}
+      </p>
     </div>
   </div>
 );
@@ -337,7 +372,9 @@ const ContactItem = ({ icon, label, value }: ContactItemProps) => (
     <div className="min-w-0">
       <p className="text-xs text-slate-500">{label}</p>
 
-      <p className="truncate text-sm font-medium text-slate-800">{value}</p>
+      <p title={value} className="truncate text-sm font-medium text-slate-800">
+        {value}
+      </p>
     </div>
   </div>
 );

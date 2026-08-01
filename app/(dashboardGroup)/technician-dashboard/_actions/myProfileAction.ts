@@ -15,17 +15,13 @@ export const updateTechnicianProfileAction = async (
 ): Promise<UpdateTechnicianProfileState> => {
   try {
     const bio = formData.get("bio")?.toString().trim() || "";
-    const experience =
-      formData.get("experience")?.toString().trim() || "";
-    const location =
-      formData.get("location")?.toString().trim() || "";
-    const hourlyRateValue =
-      formData.get("hourlyRate")?.toString().trim() || "";
+    const experience = formData.get("experience")?.toString().trim() || "";
+    const location = formData.get("location")?.toString().trim() || "";
+    const hourlyRateValue = formData.get("hourlyRate")?.toString().trim() || "";
 
-    if (
-      hourlyRateValue &&
-      Number.isNaN(Number(hourlyRateValue))
-    ) {
+    const profilePhoto = formData.get("profilePhoto")?.toString().trim() || "";
+
+    if (hourlyRateValue && Number.isNaN(Number(hourlyRateValue))) {
       return {
         success: false,
         message: "Hourly rate must be a valid number",
@@ -45,9 +41,8 @@ export const updateTechnicianProfileAction = async (
       bio,
       experience,
       location,
-      hourlyRate: hourlyRateValue
-        ? Number(hourlyRateValue)
-        : 0,
+      hourlyRate: hourlyRateValue ? Number(hourlyRateValue) : 0,
+      profilePhoto,
     };
 
     const response = await fetch(
@@ -69,9 +64,7 @@ export const updateTechnicianProfileAction = async (
       return {
         success: false,
         statusCode: response.status,
-        message:
-          result?.message ||
-          "Failed to update technician profile",
+        message: result?.message || "Failed to update technician profile",
         data: result?.data,
       };
     }
@@ -80,23 +73,16 @@ export const updateTechnicianProfileAction = async (
       expire: 0,
     });
 
-    revalidatePath(
-      "/technician-dashboard/technician/profile",
-    );
+    revalidatePath("/technician-dashboard/technician/profile");
 
     return {
       success: true,
       statusCode: result.statusCode || response.status,
-      message:
-        result.message ||
-        "Technician profile updated successfully",
+      message: result.message || "Technician profile updated successfully",
       data: result.data,
     };
   } catch (error) {
-    console.error(
-      "Technician profile update error:",
-      error,
-    );
+    console.error("Technician profile update error:", error);
 
     return {
       success: false,

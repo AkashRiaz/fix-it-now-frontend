@@ -11,7 +11,7 @@ export type IUser = {
     email: string;
     phone: string;
     role: "CUSTOMER" | "TECHNICIAN" | "ADMIN";
-    status: "ACTIVE" | "INACTIVE";
+    status: "ACTIVE" | "BLOCKED";
     createdAt: string;
     updatedAt: string;
 
@@ -53,79 +53,7 @@ export type ISidebarItem = {
   >;
 };
 
-export interface IService {
-  id: string;
 
-  title: string;
-
-  description: string;
-
-  price: number;
-
-  duration: number;
-
-  isFeatured: boolean;
-
-  technicianId: string;
-
-  categoryId: string;
-
-  createdAt: string;
-
-  updatedAt: string;
-
-  category: {
-    id: string;
-
-    name: string;
-
-    createdAt: string;
-
-    updatedAt: string;
-  };
-
-  technician: {
-    id: string;
-
-    userId: string;
-
-    bio: string | null;
-
-    experience: string;
-
-    location: string;
-
-    hourlyRate: number | null;
-
-    averageRating: number;
-
-    totalReviews: number;
-
-    completedJobs: number;
-
-    createdAt: string;
-
-    updatedAt: string;
-
-    user: {
-      id: string;
-
-      name: string;
-
-      email: string;
-
-      phone: string;
-
-      role: "CUSTOMER" | "TECHNICIAN" | "ADMIN";
-
-      status: "ACTIVE" | "INACTIVE";
-
-      createdAt: string;
-
-      updatedAt: string;
-    };
-  };
-}
 
 export type BookingStatus =
   | "REQUESTED"
@@ -174,7 +102,7 @@ export type TechnicianService = {
       email: string;
       phone: string;
       role: "TECHNICIAN";
-      status: "ACTIVE" | "INACTIVE";
+      status: "ACTIVE" | "BLOCKED";
       createdAt: string;
       updatedAt: string;
     };
@@ -188,7 +116,7 @@ export type TechnicianServicesResponse = {
   data: TechnicianService[];
 };
 
-export type TechnicianStatus = "ACTIVE" | "INACTIVE";
+export type TechnicianStatus = "ACTIVE" | "BLOCKED";
 
 export type TechnicianRole = "CUSTOMER" | "TECHNICIAN" | "ADMIN";
 
@@ -199,16 +127,6 @@ export type TechnicianUser = {
   phone: string;
   role: TechnicianRole;
   status: TechnicianStatus;
-  createdAt: string;
-  updatedAt: string;
-};
-
-export type TechnicianAvailability = {
-  id: string;
-  technicianId: string;
-  dayOfWeek: number;
-  startTime: string;
-  endTime: string;
   createdAt: string;
   updatedAt: string;
 };
@@ -227,18 +145,23 @@ export type TechnicianReview = {
 export type Technician = {
   id: string;
   userId: string;
-  bio: string | null;
-  experience: string | null;
-  location: string | null;
-  hourlyRate: number | null;
+  bio?: string | null;
+  experience?: string | null;
+  location?: string | null;
+  hourlyRate?: number | null;
+  profilePhoto?: string | null;
   averageRating: number;
   totalReviews: number;
   completedJobs: number;
-  createdAt: string;
-  updatedAt: string;
-  user: TechnicianUser;
   availability: TechnicianAvailability[];
-  reviews: TechnicianReview[];
+
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    phone?: string | null;
+    status: "ACTIVE" | "BLOCKED";
+  };
 };
 
 export type TechnicianListMeta = {
@@ -416,7 +339,6 @@ export type CategoryActionResult = {
 
 export type UserStatus = "ACTIVE" | "BLOCKED";
 
-
 export type AdminDashboardSummary = {
   totalUsers: number;
   totalCustomers: number;
@@ -548,4 +470,87 @@ export type UserStatusActionState = {
   success: boolean;
   message: string;
   data?: AdminUser | null;
+};
+
+export type TechnicianAvailability = {
+  id: string;
+  technicianId: string;
+  dayOfWeek: number;
+  startTime: string;
+  endTime: string;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export type BookingTechnician = {
+  id: string;
+  profilePhoto?: string | null;
+
+  user?: {
+    id?: string;
+    name?: string;
+  };
+
+  availability?: TechnicianAvailability[];
+};
+
+export type BookingService = {
+  id: string;
+  title: string;
+  description?: string | null;
+  price: number;
+  duration: number;
+};
+
+export type CreateBookingPayload = {
+  slotStart: string;
+  slotEnd: string;
+  notes?: string;
+  customerAddress: string;
+  serviceId: string;
+};
+
+export type CreateBookingResult = {
+  success: boolean;
+  statusCode?: number;
+  message: string;
+  data?: unknown;
+};
+
+export type IService = {
+  id: string;
+  title: string;
+  description?: string | null;
+  price: number;
+  duration: number;
+  isFeatured?: boolean;
+
+  category: {
+    id: string;
+    name: string;
+  };
+
+  technician: {
+    id: string;
+    userId: string;
+    profilePhoto?: string | null;
+    location?: string | null;
+    averageRating: number;
+    totalReviews: number;
+    completedJobs: number;
+
+    availability?: {
+      id: string;
+      technicianId: string;
+      dayOfWeek: number;
+      startTime: string;
+      endTime: string;
+    }[];
+
+    user?: {
+      id: string;
+      name: string;
+      status?: "ACTIVE" | "BLOCKED";
+    };
+  };
 };
