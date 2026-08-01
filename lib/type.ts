@@ -414,7 +414,7 @@ export type CategoryActionResult = {
   data?: Category | null;
 };
 
-export type UserStatus = "ACTIVE" | "INACTIVE";
+export type UserStatus = "ACTIVE" | "BLOCKED";
 
 
 export type AdminDashboardSummary = {

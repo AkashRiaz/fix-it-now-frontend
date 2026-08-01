@@ -1,6 +1,6 @@
 
 import { ISidebarItem } from "@/lib/type";
-import { FileText, LayoutDashboard, FolderKanban  } from "lucide-react";
+import { UsersRound, LayoutDashboard, FolderKanban  } from "lucide-react";
 
 export const ADMIN_SIDEBAR_ITEMS: ISidebarItem[] = [
     {
@@ -13,4 +13,9 @@ export const ADMIN_SIDEBAR_ITEMS: ISidebarItem[] = [
         href : "/admin-dashboard/categories",
         icon : FolderKanban
     },
+    {
+        label : "User Management",
+        href : "/admin-dashboard/user-management",
+        icon : UsersRound
+    }
 ]
