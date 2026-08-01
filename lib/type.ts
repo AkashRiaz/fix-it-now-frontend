@@ -135,3 +135,55 @@ export type BookingStatus =
   | "COMPLETED"
   | "CANCELLED"
   | "DECLINED";
+
+export type TechnicianService = {
+  id: string;
+  title: string;
+  description: string | null;
+  price: number;
+  duration: number;
+  isFeatured: boolean;
+  technicianId: string;
+  categoryId: string;
+  createdAt: string;
+  updatedAt: string;
+
+  category: {
+    id: string;
+    name: string;
+    createdAt: string;
+    updatedAt: string;
+  };
+
+  technician: {
+    id: string;
+    userId: string;
+    bio: string | null;
+    experience: string;
+    location: string;
+    hourlyRate: number | null;
+    averageRating: number;
+    totalReviews: number;
+    completedJobs: number;
+    createdAt: string;
+    updatedAt: string;
+
+    user: {
+      id: string;
+      name: string;
+      email: string;
+      phone: string;
+      role: "TECHNICIAN";
+      status: "ACTIVE" | "INACTIVE";
+      createdAt: string;
+      updatedAt: string;
+    };
+  };
+};
+
+export type TechnicianServicesResponse = {
+  success: boolean;
+  statusCode: number;
+  message: string;
+  data: TechnicianService[];
+};

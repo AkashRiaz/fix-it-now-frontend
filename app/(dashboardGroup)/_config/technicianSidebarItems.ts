@@ -1,5 +1,5 @@
 import { ISidebarItem } from "@/lib/type";
-import { FileText, LayoutDashboard, User } from "lucide-react";
+import { FileText, LayoutDashboard, User,Wrench } from "lucide-react";
 
 export const TECHNICIAN_SIDEBAR_ITEMS: ISidebarItem[] = [
   {
@@ -12,6 +12,12 @@ export const TECHNICIAN_SIDEBAR_ITEMS: ISidebarItem[] = [
     href: "/technician-dashboard/technician/bookings",
     icon: FileText,
   },
+  {
+    label: "Services",
+    href: "/technician-dashboard/services",
+    icon: Wrench,
+  },
+
   {
     label: "Profile",
     href: "/technician-dashboard/profile",

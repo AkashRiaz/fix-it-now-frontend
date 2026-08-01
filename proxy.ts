@@ -4,6 +4,7 @@ import type { NextRequest } from "next/server";
 import { JwtPayload } from "jsonwebtoken";
 import { jwtUtils } from "./utils/jwt";
 import { cookies } from "next/headers";
+import { getNewAccessToken } from "./service/refreshToken";
 
 const AUTH_ROUTES = ["/login", "/register"];
 
@@ -17,11 +18,11 @@ export async function proxy(request: NextRequest) {
 
   // const accessToken = cookieStore.get('access_token')?.value;
 
-  const accessToken = request.cookies.get("accessToken")?.value;
+  let accessToken = request.cookies.get("accessToken")?.value;
   // console.log(accessToken, "accessToken-----");
   const refreshToken = request.cookies.get("refreshToken")?.value;
 
-  const decodedAccessToken = accessToken
+  let decodedAccessToken = accessToken
     ? jwtUtils.verifyToken(accessToken, process.env.JWT_ACCESS_SECRET as string)
     : null;
 
@@ -34,25 +35,25 @@ export async function proxy(request: NextRequest) {
       )
     : null;
 
-  //   if (!decodedAccessToken?.success && decodedRefreshToken?.success) {
-  //     const result = await getNewAccessToken();
+    if (!decodedAccessToken?.success && decodedRefreshToken?.success) {
+      const result = await getNewAccessToken();
 
-  //     if (result.success && result.data) {
-  //       const newAccessToken = result.data.accessToken;
-  //       // console.log(newAccessToken, "newAccessToken");
-  //       cookieStore.set("accessToken", newAccessToken, {
-  //         httpOnly: true,
-  //         maxAge: 60 * 60 * 24, // 1 day
-  //         sameSite: "lax",
-  //       });
+      if (result.success && result.data) {
+        const newAccessToken = result.data.accessToken;
+        // console.log(newAccessToken, "newAccessToken");
+        cookieStore.set("accessToken", newAccessToken, {
+          httpOnly: true,
+          maxAge: 60 * 60 * 24, // 1 day
+          sameSite: "lax",
+        });
 
-  //       accessToken = newAccessToken;
-  //       decodedAccessToken = jwtUtils.verifyToken(
-  //         accessToken!,
-  //         process.env.JWT_ACCESS_SECRET as string,
-  //       );
-  //     }
-  //   }
+        accessToken = newAccessToken;
+        decodedAccessToken = jwtUtils.verifyToken(
+          accessToken!,
+          process.env.JWT_ACCESS_SECRET as string,
+        );
+      }
+    }
 
   let userRole = null;
 

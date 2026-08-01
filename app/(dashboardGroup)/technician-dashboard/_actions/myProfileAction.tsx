@@ -53,7 +53,7 @@ export const updateTechnicianProfileAction = async (
     const response = await fetch(
       `${process.env.BACKEND_API_URL}/technician/profile`,
       {
-        method: "PUT",
+        method: "PATCH",
         headers: {
           "Content-Type": "application/json",
           Cookie: `accessToken=${accessToken}`,
