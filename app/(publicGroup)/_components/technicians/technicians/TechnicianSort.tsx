@@ -1,10 +1,7 @@
 "use client";
 
-import {
-  usePathname,
-  useRouter,
-  useSearchParams,
-} from "next/navigation";
+import { ArrowDownAZ } from "lucide-react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 const sortOptions = [
   {
@@ -23,8 +20,8 @@ const sortOptions = [
     sortOrder: "desc",
   },
   {
-    label: "Most Experienced",
-    sortBy: "experience",
+    label: "Most Completed Jobs",
+    sortBy: "completedJobs",
     sortOrder: "desc",
   },
   {
@@ -44,47 +41,43 @@ export function TechnicianSort() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const sortBy =
-    searchParams.get("sortBy") || "createdAt";
+  const sortBy = searchParams.get("sortBy") || "createdAt";
 
-  const sortOrder =
-    searchParams.get("sortOrder") || "desc";
+  const sortOrder = searchParams.get("sortOrder") || "desc";
 
   const currentValue = `${sortBy}:${sortOrder}`;
 
   const handleSortChange = (value: string) => {
-    const [selectedSortBy, selectedSortOrder] =
-      value.split(":");
+    const [selectedSortBy, selectedSortOrder] = value.split(":");
 
-    const params = new URLSearchParams(
-      searchParams.toString(),
-    );
+    const params = new URLSearchParams(searchParams.toString());
 
     params.set("sortBy", selectedSortBy);
     params.set("sortOrder", selectedSortOrder);
-    params.delete("page");
+    params.set("page", "1");
 
-    router.replace(
-      `${pathname}?${params.toString()}`,
-    );
+    router.replace(`${pathname}?${params.toString()}`);
   };
 
   return (
-    <select
-      value={currentValue}
-      onChange={(event) =>
-        handleSortChange(event.target.value)
-      }
-      className="h-10 min-w-44 rounded-md border border-input bg-background px-3 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/30"
-    >
-      {sortOptions.map((option) => (
-        <option
-          key={`${option.sortBy}-${option.sortOrder}`}
-          value={`${option.sortBy}:${option.sortOrder}`}
-        >
-          {option.label}
-        </option>
-      ))}
-    </select>
+    <div className="relative w-full sm:w-auto">
+      <ArrowDownAZ className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+
+      <select
+        value={currentValue}
+        onChange={(event) => handleSortChange(event.target.value)}
+        aria-label="Sort technicians"
+        className="h-10 w-full min-w-48 rounded-md border border-input bg-background pl-9 pr-3 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/30"
+      >
+        {sortOptions.map((option) => (
+          <option
+            key={`${option.sortBy}-${option.sortOrder}`}
+            value={`${option.sortBy}:${option.sortOrder}`}
+          >
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </div>
   );
 }

@@ -1,21 +1,32 @@
 "use client";
 
 import { Input } from "@/components/ui/input";
-
-import { SearchIcon } from "lucide-react";
-
+import { SearchIcon, X } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 
 export function ServiceSearchBar() {
   const pathname = usePathname();
-
   const router = useRouter();
-
   const searchParams = useSearchParams();
 
   const debounceReference = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const currentSearchTerm = searchParams.get("searchTerm") || "";
+
+  useEffect(() => {
+    return () => {
+      if (debounceReference.current) {
+        clearTimeout(debounceReference.current);
+      }
+    };
+  }, []);
+
+  const updateURL = (params: URLSearchParams) => {
+    const queryString = params.toString();
+
+    router.replace(queryString ? `${pathname}?${queryString}` : pathname);
+  };
 
   const handleChange = (value: string) => {
     if (debounceReference.current) {
@@ -25,35 +36,55 @@ export function ServiceSearchBar() {
     debounceReference.current = setTimeout(() => {
       const params = new URLSearchParams(searchParams.toString());
 
-      if (value) {
-        params.set("searchTerm", value);
+      const trimmedValue = value.trim();
+
+      if (trimmedValue) {
+        params.set("searchTerm", trimmedValue);
       } else {
         params.delete("searchTerm");
       }
 
-      router.replace(`${pathname}?${params.toString()}`);
+      params.set("page", "1");
+
+      updateURL(params);
     }, 500);
   };
 
+  const clearSearch = () => {
+    if (debounceReference.current) {
+      clearTimeout(debounceReference.current);
+    }
+
+    const params = new URLSearchParams(searchParams.toString());
+
+    params.delete("searchTerm");
+    params.set("page", "1");
+
+    updateURL(params);
+  };
+
   return (
-    <div className="relative min-w-md ">
-      <SearchIcon
-        className="
-          absolute
-          left-3
-          top-1/2
-          size-4
-          -translate-y-1/2
-          text-muted-foreground
-        "
-      />
+    <div className="relative w-full lg:max-w-md">
+      <SearchIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
 
       <Input
-        defaultValue={searchParams.get("searchTerm") || ""}
-        onChange={(e) => handleChange(e.target.value)}
+        key={currentSearchTerm}
+        defaultValue={currentSearchTerm}
+        onChange={(event) => handleChange(event.target.value)}
         placeholder="Search services..."
-        className="pl-9 "
+        className="pl-9 pr-10"
       />
+
+      {currentSearchTerm && (
+        <button
+          type="button"
+          onClick={clearSearch}
+          aria-label="Clear service search"
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition hover:text-foreground"
+        >
+          <X className="size-4" />
+        </button>
+      )}
     </div>
   );
 }

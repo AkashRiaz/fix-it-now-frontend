@@ -3,7 +3,6 @@
 import { FormEvent, useState } from "react";
 import { Filter, RotateCcw, SlidersHorizontal } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,9 +17,22 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 
-const filterKeys = ["location", "status", "minHourlyRate", "maxHourlyRate"];
+export type ServiceCategory = {
+  id: string;
+  name: string;
+  createdAt?: string;
+  updatedAt?: string;
+};
 
-export function TechnicianFilterSheet() {
+type ServiceFilterSheetProps = {
+  categories?: ServiceCategory[];
+};
+
+const filterKeys = ["category", "location", "rating", "minPrice", "maxPrice"];
+
+export function ServiceFilterSheet({
+  categories = [],
+}: ServiceFilterSheetProps) {
   const [open, setOpen] = useState(false);
 
   const pathname = usePathname();
@@ -42,51 +54,17 @@ export function TechnicianFilterSheet() {
 
     const formData = new FormData(event.currentTarget);
 
-    const location = formData.get("location")?.toString().trim() || "";
-
-    const status = formData.get("status")?.toString().trim() || "";
-
-    const minHourlyRate =
-      formData.get("minHourlyRate")?.toString().trim() || "";
-
-    const maxHourlyRate =
-      formData.get("maxHourlyRate")?.toString().trim() || "";
-
-    if (
-      minHourlyRate &&
-      maxHourlyRate &&
-      Number(minHourlyRate) > Number(maxHourlyRate)
-    ) {
-      toast.error("Minimum hourly rate cannot be greater than maximum rate.");
-
-      return;
-    }
-
     const params = new URLSearchParams(searchParams.toString());
 
-    if (location) {
-      params.set("location", location);
-    } else {
-      params.delete("location");
-    }
+    filterKeys.forEach((key) => {
+      const value = formData.get(key)?.toString().trim() || "";
 
-    if (status) {
-      params.set("status", status);
-    } else {
-      params.delete("status");
-    }
-
-    if (minHourlyRate) {
-      params.set("minHourlyRate", minHourlyRate);
-    } else {
-      params.delete("minHourlyRate");
-    }
-
-    if (maxHourlyRate) {
-      params.set("maxHourlyRate", maxHourlyRate);
-    } else {
-      params.delete("maxHourlyRate");
-    }
+      if (value) {
+        params.set(key, value);
+      } else {
+        params.delete(key);
+      }
+    });
 
     params.set("page", "1");
 
@@ -113,7 +91,7 @@ export function TechnicianFilterSheet() {
         <Button
           type="button"
           variant="outline"
-          className="relative w-full px-5 sm:w-auto"
+          className="relative w-full sm:w-auto"
         >
           <Filter className="mr-2 size-4" />
           Filters
@@ -127,27 +105,43 @@ export function TechnicianFilterSheet() {
 
       <SheetContent
         side="right"
-        className="w-full overflow-y-auto px-5 sm:max-w-md"
+        className="flex w-full flex-col overflow-y-auto sm:max-w-md"
       >
-        <SheetHeader>
+        <SheetHeader className="px-5">
           <div className="mb-2 flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
             <SlidersHorizontal className="size-5" />
           </div>
 
-          <SheetTitle>Filter Technicians</SheetTitle>
+          <SheetTitle>Filter Services</SheetTitle>
 
           <SheetDescription>
-            Filter technicians by location, account status and hourly rate.
+            Filter services by category, technician location, rating and price.
           </SheetDescription>
         </SheetHeader>
 
-        <form
-          onSubmit={handleSubmit}
-          className="flex min-h-[calc(100vh-150px)] flex-col"
-        >
-          <div className="flex-1 space-y-6 py-6">
+        <form onSubmit={handleSubmit} className="flex flex-1 flex-col">
+          <div className="flex-1 space-y-6 px-5 py-6">
             <div className="space-y-2">
-              <Label htmlFor="location">Location</Label>
+              <Label htmlFor="category">Category</Label>
+
+              <select
+                id="category"
+                name="category"
+                defaultValue={searchParams.get("category") || ""}
+                className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/30"
+              >
+                <option value="">All categories</option>
+
+                {categories.map((category) => (
+                  <option key={category.id} value={category.name}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="location">Technician Location</Label>
 
               <Input
                 id="location"
@@ -157,74 +151,80 @@ export function TechnicianFilterSheet() {
               />
 
               <p className="text-xs text-muted-foreground">
-                Enter the complete location because your backend currently uses
-                an exact match.
+                Enter the complete location because your backend uses an exact
+                match.
               </p>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="status">Account Status</Label>
+              <Label htmlFor="rating">Minimum Technician Rating</Label>
 
               <select
-                id="status"
-                name="status"
-                defaultValue={searchParams.get("status") || ""}
+                id="rating"
+                name="rating"
+                defaultValue={searchParams.get("rating") || ""}
                 className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/30"
               >
-                <option value="">All statuses</option>
+                <option value="">Any rating</option>
 
-                <option value="ACTIVE">Active</option>
+                <option value="5">5 stars</option>
 
-                <option value="INACTIVE">Inactive</option>
+                <option value="4">4 stars or higher</option>
+
+                <option value="3">3 stars or higher</option>
+
+                <option value="2">2 stars or higher</option>
+
+                <option value="1">1 star or higher</option>
               </select>
             </div>
 
             <div className="space-y-3">
-              <Label>Hourly Rate Range</Label>
+              <Label>Price Range</Label>
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
                   <Label
-                    htmlFor="minHourlyRate"
+                    htmlFor="minPrice"
                     className="text-xs text-muted-foreground"
                   >
                     Minimum
                   </Label>
 
                   <Input
-                    id="minHourlyRate"
-                    name="minHourlyRate"
+                    id="minPrice"
+                    name="minPrice"
                     type="number"
                     min="0"
-                    step="1"
-                    defaultValue={searchParams.get("minHourlyRate") || ""}
+                    step="0.01"
+                    defaultValue={searchParams.get("minPrice") || ""}
                     placeholder="500"
                   />
                 </div>
 
                 <div className="space-y-2">
                   <Label
-                    htmlFor="maxHourlyRate"
+                    htmlFor="maxPrice"
                     className="text-xs text-muted-foreground"
                   >
                     Maximum
                   </Label>
 
                   <Input
-                    id="maxHourlyRate"
-                    name="maxHourlyRate"
+                    id="maxPrice"
+                    name="maxPrice"
                     type="number"
                     min="0"
-                    step="1"
-                    defaultValue={searchParams.get("maxHourlyRate") || ""}
-                    placeholder="2000"
+                    step="0.01"
+                    defaultValue={searchParams.get("maxPrice") || ""}
+                    placeholder="5000"
                   />
                 </div>
               </div>
             </div>
           </div>
 
-          <SheetFooter className="border-t pt-4">
+          <SheetFooter className="border-t px-5 py-5">
             <Button type="button" variant="outline" onClick={handleReset}>
               <RotateCcw className="mr-2 size-4" />
               Reset

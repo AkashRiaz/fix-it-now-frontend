@@ -1,102 +1,100 @@
 "use server";
 
-export const getServiceAction = async ({
-  query,
-}: {
-  query?: {
-    [key: string]: string | string[] | undefined;
-  };
-}) => {
+type ServiceQuery = {
+  [key: string]: string | string[] | undefined;
+};
 
+const getQueryValue = (value: string | string[] | undefined) => {
+  if (Array.isArray(value)) {
+    return value[0] || "";
+  }
+
+  return value || "";
+};
+
+export const getServiceAction = async ({ query }: { query?: ServiceQuery }) => {
   const params = new URLSearchParams();
 
+  const searchTerm = getQueryValue(query?.searchTerm);
 
-  if (query && query.searchTerm) {
-    params.set(
-      "searchTerm",
-      query.searchTerm as string
-    );
+  const category = getQueryValue(query?.category);
+
+  const location = getQueryValue(query?.location);
+
+  const rating = getQueryValue(query?.rating);
+
+  const minPrice = getQueryValue(query?.minPrice);
+
+  const maxPrice = getQueryValue(query?.maxPrice);
+
+  const sortBy = getQueryValue(query?.sortBy);
+
+  const sortOrder = getQueryValue(query?.sortOrder);
+
+  const page = getQueryValue(query?.page);
+
+  const limit = getQueryValue(query?.limit);
+
+  if (searchTerm) {
+    params.set("searchTerm", searchTerm);
   }
 
-
-  if (query && query.category) {
-    params.set(
-      "category",
-      query.category as string
-    );
+  if (category) {
+    params.set("category", category);
   }
 
-
-  if (query && query.location) {
-    params.set(
-      "location",
-      query.location as string
-    );
+  if (location) {
+    params.set("location", location);
   }
 
-
-  if (query && query.rating) {
-    params.set(
-      "rating",
-      query.rating as string
-    );
+  if (rating) {
+    params.set("rating", rating);
   }
 
-
-  if (query && query.minPrice) {
-    params.set(
-      "minPrice",
-      query.minPrice as string
-    );
+  if (minPrice) {
+    params.set("minPrice", minPrice);
   }
 
-
-  if (query && query.maxPrice) {
-    params.set(
-      "maxPrice",
-      query.maxPrice as string
-    );
+  if (maxPrice) {
+    params.set("maxPrice", maxPrice);
   }
 
-
-  if (query && query.page) {
-    params.set(
-      "page",
-      query.page as string
-    );
+  if (sortBy) {
+    params.set("sortBy", sortBy);
   }
 
-
-  if (query && query.limit) {
-    params.set(
-      "limit",
-      query.limit as string
-    );
+  if (sortOrder) {
+    params.set("sortOrder", sortOrder);
   }
 
+  if (page) {
+    params.set("page", page);
+  }
 
+  if (limit) {
+    params.set("limit", limit);
+  }
+
+  const queryString = params.toString();
 
   const res = await fetch(
-    `${process.env.BACKEND_API_URL}/service?${params.toString()}`,
+    `${process.env.BACKEND_API_URL}/service${
+      queryString ? `?${queryString}` : ""
+    }`,
     {
       method: "GET",
-
       headers: {
         "Content-Type": "application/json",
       },
-
       cache: "force-cache",
-
       next: {
         revalidate: 60 * 60 * 24,
         tags: ["services"],
       },
-    }
+    },
   );
 
-
   const result = await res.json();
-
 
   return result;
 };

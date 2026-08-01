@@ -3,7 +3,7 @@
 import { Input } from "@/components/ui/input";
 import { SearchIcon, X } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 
 export function TechnicianSearchBar() {
   const pathname = usePathname();
@@ -13,6 +13,20 @@ export function TechnicianSearchBar() {
   const debounceReference = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const searchTerm = searchParams.get("searchTerm") || "";
+
+  useEffect(() => {
+    return () => {
+      if (debounceReference.current) {
+        clearTimeout(debounceReference.current);
+      }
+    };
+  }, []);
+
+  const updateURL = (params: URLSearchParams) => {
+    const queryString = params.toString();
+
+    router.replace(queryString ? `${pathname}?${queryString}` : pathname);
+  };
 
   const updateSearch = (value: string) => {
     if (debounceReference.current) {
@@ -30,11 +44,9 @@ export function TechnicianSearchBar() {
         params.delete("searchTerm");
       }
 
-      params.delete("page");
+      params.set("page", "1");
 
-      const queryString = params.toString();
-
-      router.replace(queryString ? `${pathname}?${queryString}` : pathname);
+      updateURL(params);
     }, 500);
   };
 
@@ -46,11 +58,9 @@ export function TechnicianSearchBar() {
     const params = new URLSearchParams(searchParams.toString());
 
     params.delete("searchTerm");
-    params.delete("page");
+    params.set("page", "1");
 
-    const queryString = params.toString();
-
-    router.replace(queryString ? `${pathname}?${queryString}` : pathname);
+    updateURL(params);
   };
 
   return (
@@ -62,7 +72,7 @@ export function TechnicianSearchBar() {
         defaultValue={searchTerm}
         onChange={(event) => updateSearch(event.target.value)}
         placeholder="Search technician, location, experience..."
-        className="pr-10 pl-9"
+        className="pl-9 pr-10"
       />
 
       {searchTerm && (

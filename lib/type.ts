@@ -334,7 +334,6 @@ export type TechnicianDashboardResponse = {
   data?: TechnicianDashboardData | null;
 };
 
-
 export type CustomerPaymentService = {
   id: string;
   title: string;
@@ -392,4 +391,161 @@ export type CustomerPaymentResponse = {
   statusCode: number;
   message: string;
   data?: CustomerPaymentData | null;
+};
+
+export type Category = {
+  id: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type CategoryResponse = {
+  success: boolean;
+  statusCode: number;
+  message: string;
+  data: Category[];
+};
+
+export type CategoryActionResult = {
+  success: boolean;
+  statusCode?: number;
+  message: string;
+  data?: Category | null;
+};
+
+export type UserStatus = "ACTIVE" | "INACTIVE";
+
+
+export type AdminDashboardSummary = {
+  totalUsers: number;
+  totalCustomers: number;
+  totalTechnicians: number;
+  activeUsers: number;
+  activeBookings: number;
+  completedBookings: number;
+  totalRevenue: number;
+};
+
+export type BookingStatusSummary = {
+  requested: number;
+  accepted: number;
+  paid: number;
+  inProgress: number;
+  completed: number;
+  cancelled: number;
+  declined: number;
+};
+
+export type PaymentSummary = {
+  completedPayments: number;
+  pendingPayments: number;
+  failedPayments: number;
+};
+
+export type DashboardUser = {
+  id: string;
+  name: string;
+  email?: string;
+};
+
+export type DashboardTechnician = {
+  id: string;
+  user?: DashboardUser | null;
+};
+
+export type DashboardPayment = {
+  id: string;
+  amount: number;
+  provider?: PaymentProvider;
+  status: PaymentStatus;
+  paidAt?: string | null;
+  createdAt?: string;
+};
+
+export type RecentBooking = {
+  id: string;
+  bookingDate: string;
+  status: BookingStatus;
+  totalPrice: number;
+  customerAddress?: string | null;
+  createdAt?: string;
+
+  service?: DashboardService | null;
+  customer?: DashboardUser | null;
+  technician?: DashboardTechnician | null;
+  payment?: DashboardPayment | null;
+};
+
+export type RecentPaymentBooking = {
+  id: string;
+  bookingDate: string;
+  status: BookingStatus;
+
+  service?: DashboardService | null;
+  customer?: DashboardUser | null;
+  technician?: DashboardTechnician | null;
+};
+
+export type TopTechnician = {
+  id: string;
+  averageRating: number;
+  totalReviews: number;
+  completedJobs: number;
+  location?: string | null;
+
+  user?: {
+    id: string;
+    name: string;
+    email?: string;
+    status: UserStatus;
+  } | null;
+};
+
+export type AdminDashboardData = {
+  summary?: AdminDashboardSummary | null;
+  bookingStatusSummary?: BookingStatusSummary | null;
+  paymentSummary?: PaymentSummary | null;
+  recentBookings?: RecentBooking[];
+  recentPayments?: RecentPayment[];
+  topTechnicians?: TopTechnician[];
+};
+
+export type AdminDashboardResponse = {
+  success: boolean;
+  statusCode: number;
+  message: string;
+  data?: AdminDashboardData | null;
+};
+
+export type AdminUser = {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string | null;
+  role: "CUSTOMER" | "TECHNICIAN" | "ADMIN";
+  status: UserStatus;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type AdminUserMeta = {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages?: number;
+};
+
+export type AdminUserListResponse = {
+  success: boolean;
+  statusCode: number;
+  message: string;
+  meta?: AdminUserMeta;
+  data?: AdminUser[];
+};
+
+export type UserStatusActionState = {
+  success: boolean;
+  message: string;
+  data?: AdminUser | null;
 };
