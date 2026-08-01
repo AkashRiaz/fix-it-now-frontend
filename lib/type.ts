@@ -188,13 +188,9 @@ export type TechnicianServicesResponse = {
   data: TechnicianService[];
 };
 
-
 export type TechnicianStatus = "ACTIVE" | "INACTIVE";
 
-export type TechnicianRole =
-  | "CUSTOMER"
-  | "TECHNICIAN"
-  | "ADMIN";
+export type TechnicianRole = "CUSTOMER" | "TECHNICIAN" | "ADMIN";
 
 export type TechnicianUser = {
   id: string;
@@ -257,4 +253,143 @@ export type TechnicianListResponse = {
   message: string;
   meta: TechnicianListMeta;
   data: Technician[];
+};
+
+export type PaymentStatus = "PENDING" | "COMPLETED" | "FAILED";
+
+export type PaymentProvider = "STRIPE";
+
+export type TechnicianDashboardSummary = {
+  upcomingJobs: number;
+  totalEarnings: number;
+  pendingRequests: number;
+  completedJobs: number;
+};
+
+export type DashboardService = {
+  id: string;
+  title: string;
+};
+
+export type DashboardCustomer = {
+  id: string;
+  name: string;
+};
+
+export type DashboardPaymentBooking = {
+  id: string;
+  bookingDate: string;
+  status: BookingStatus;
+  service?: DashboardService | null;
+  customer?: DashboardCustomer | null;
+};
+
+export type RecentPayment = {
+  id: string;
+  bookingId: string;
+  transactionId: string | null;
+  stripeSessionId: string | null;
+  amount: number;
+  provider: PaymentProvider;
+  status: PaymentStatus;
+  paidAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  booking?: DashboardPaymentBooking | null;
+};
+
+export type DashboardBooking = {
+  id: string;
+  bookingDate: string;
+  status: BookingStatus;
+  totalPrice: number;
+  customerAddress?: string | null;
+  notes?: string | null;
+
+  service?: {
+    id: string;
+    title: string;
+    duration?: number;
+  } | null;
+
+  customer?: {
+    id: string;
+    name: string;
+    email?: string;
+    phone?: string;
+  } | null;
+};
+
+export type TechnicianDashboardData = {
+  summary?: TechnicianDashboardSummary | null;
+  upcomingBookings?: DashboardBooking[];
+  pendingBookings?: DashboardBooking[];
+  recentPayments?: RecentPayment[];
+};
+
+export type TechnicianDashboardResponse = {
+  success: boolean;
+  statusCode: number;
+  message: string;
+  data?: TechnicianDashboardData | null;
+};
+
+
+export type CustomerPaymentService = {
+  id: string;
+  title: string;
+};
+
+export type CustomerPaymentTechnicianUser = {
+  id: string;
+  name: string;
+};
+
+export type CustomerPaymentTechnician = {
+  id: string;
+
+  user?: CustomerPaymentTechnicianUser | null;
+};
+
+export type CustomerPaymentBooking = {
+  id: string;
+  bookingDate: string;
+  status: BookingStatus;
+  totalPrice: number;
+
+  service?: CustomerPaymentService | null;
+
+  technician?: CustomerPaymentTechnician | null;
+};
+
+export type CustomerPayment = {
+  id: string;
+  bookingId: string;
+  transactionId: string | null;
+  stripeSessionId: string | null;
+  amount: number;
+  provider: PaymentProvider;
+  status: PaymentStatus;
+  paidAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+
+  booking?: CustomerPaymentBooking | null;
+};
+
+export type CustomerPaymentSummary = {
+  totalPayments: number;
+  totalPaid: number;
+};
+
+export type CustomerPaymentData = {
+  summary?: CustomerPaymentSummary | null;
+  payments?: CustomerPayment[];
+};
+
+export type CustomerPaymentResponse = {
+  success: boolean;
+  statusCode: number;
+  message: string;
+  data?: CustomerPaymentData | null;
 };
