@@ -187,3 +187,74 @@ export type TechnicianServicesResponse = {
   message: string;
   data: TechnicianService[];
 };
+
+
+export type TechnicianStatus = "ACTIVE" | "INACTIVE";
+
+export type TechnicianRole =
+  | "CUSTOMER"
+  | "TECHNICIAN"
+  | "ADMIN";
+
+export type TechnicianUser = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  role: TechnicianRole;
+  status: TechnicianStatus;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type TechnicianAvailability = {
+  id: string;
+  technicianId: string;
+  dayOfWeek: number;
+  startTime: string;
+  endTime: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type TechnicianReview = {
+  id: string;
+  rating: number;
+  comment: string | null;
+  customerId: string;
+  technicianId: string;
+  bookingId: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type Technician = {
+  id: string;
+  userId: string;
+  bio: string | null;
+  experience: string | null;
+  location: string | null;
+  hourlyRate: number | null;
+  averageRating: number;
+  totalReviews: number;
+  completedJobs: number;
+  createdAt: string;
+  updatedAt: string;
+  user: TechnicianUser;
+  availability: TechnicianAvailability[];
+  reviews: TechnicianReview[];
+};
+
+export type TechnicianListMeta = {
+  page: number;
+  limit: number;
+  total: number;
+};
+
+export type TechnicianListResponse = {
+  success: boolean;
+  statusCode: number;
+  message: string;
+  meta: TechnicianListMeta;
+  data: Technician[];
+};
