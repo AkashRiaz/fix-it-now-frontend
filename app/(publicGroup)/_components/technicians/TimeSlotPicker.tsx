@@ -1,13 +1,8 @@
 "use client";
 
 import { useMemo } from "react";
-import {
-  AlertCircle,
-  CheckCircle2,
-  Clock3,
-} from "lucide-react";
+import { AlertCircle, CheckCircle2, Clock3 } from "lucide-react";
 import { TechnicianAvailability } from "@/lib/type";
-
 
 interface TimeSlotPickerProps {
   selectedDate?: Date;
@@ -28,25 +23,23 @@ const getMinutesFromDate = (value: string) => {
     return null;
   }
 
-  return date.getHours() * 60 + date.getMinutes();
+  return date.getUTCHours() * 60 + date.getUTCMinutes();
 };
 
 const minutesToTimeValue = (totalMinutes: number) => {
   const hours = Math.floor(totalMinutes / 60);
   const minutes = totalMinutes % 60;
 
-  return `${String(hours).padStart(2, "0")}:${String(
-    minutes,
-  ).padStart(2, "0")}`;
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(
+    2,
+    "0",
+  )}`;
 };
 
 const timeValueToMinutes = (value: string) => {
   const [hours, minutes] = value.split(":").map(Number);
 
-  if (
-    Number.isNaN(hours) ||
-    Number.isNaN(minutes)
-  ) {
+  if (Number.isNaN(hours) || Number.isNaN(minutes)) {
     return null;
   }
 
@@ -62,12 +55,7 @@ const formatTime = (value: string) => {
 
   const date = new Date();
 
-  date.setHours(
-    Math.floor(minutes / 60),
-    minutes % 60,
-    0,
-    0,
-  );
+  date.setHours(Math.floor(minutes / 60), minutes % 60, 0, 0);
 
   return date.toLocaleTimeString("en-US", {
     hour: "numeric",
@@ -75,10 +63,7 @@ const formatTime = (value: string) => {
   });
 };
 
-const generateTimeSlots = (
-  startMinutes: number,
-  endMinutes: number,
-) => {
+const generateTimeSlots = (startMinutes: number, endMinutes: number) => {
   const times: string[] = [];
 
   for (
@@ -108,20 +93,14 @@ export function TimeSlotPicker({
 
     const dayOfWeek = selectedDate.getDay();
 
-    return availability.filter(
-      (item) => item.dayOfWeek === dayOfWeek,
-    );
+    return availability.filter((item) => item.dayOfWeek === dayOfWeek);
   }, [selectedDate, availability]);
 
   const startTimeOptions = useMemo(() => {
     const values = dayAvailability.flatMap((item) => {
-      const startMinutes = getMinutesFromDate(
-        item.startTime,
-      );
+      const startMinutes = getMinutesFromDate(item.startTime);
 
-      const endMinutes = getMinutesFromDate(
-        item.endTime,
-      );
+      const endMinutes = getMinutesFromDate(item.endTime);
 
       if (
         startMinutes === null ||
@@ -147,44 +126,34 @@ export function TimeSlotPicker({
       return [];
     }
 
-    const selectedStartMinutes =
-      timeValueToMinutes(selectedStartTime);
+    const selectedStartMinutes = timeValueToMinutes(selectedStartTime);
 
     if (selectedStartMinutes === null) {
       return [];
     }
 
-    const matchingAvailability =
-      dayAvailability.find((item) => {
-        const startMinutes = getMinutesFromDate(
-          item.startTime,
-        );
+    const matchingAvailability = dayAvailability.find((item) => {
+      const startMinutes = getMinutesFromDate(item.startTime);
 
-        const endMinutes = getMinutesFromDate(
-          item.endTime,
-        );
+      const endMinutes = getMinutesFromDate(item.endTime);
 
-        if (
-          startMinutes === null ||
-          endMinutes === null
-        ) {
-          return false;
-        }
+      if (startMinutes === null || endMinutes === null) {
+        return false;
+      }
 
-        return (
-          selectedStartMinutes >= startMinutes &&
-          selectedStartMinutes < endMinutes
-        );
-      });
+      return (
+        selectedStartMinutes >= startMinutes &&
+        selectedStartMinutes < endMinutes
+      );
+    });
 
     if (!matchingAvailability) {
       return [];
     }
 
-    const availabilityEndMinutes =
-      getMinutesFromDate(
-        matchingAvailability.endTime,
-      );
+    const availabilityEndMinutes = getMinutesFromDate(
+      matchingAvailability.endTime,
+    );
 
     if (availabilityEndMinutes === null) {
       return [];
@@ -194,32 +163,20 @@ export function TimeSlotPicker({
       selectedStartMinutes + SLOT_INTERVAL_MINUTES,
       availabilityEndMinutes,
     );
-  }, [
-    selectedStartTime,
-    dayAvailability,
-  ]);
+  }, [selectedStartTime, dayAvailability]);
 
   const availabilityLabel = useMemo(() => {
     return dayAvailability
       .map((item) => {
-        const startMinutes = getMinutesFromDate(
-          item.startTime,
-        );
+        const startMinutes = getMinutesFromDate(item.startTime);
 
-        const endMinutes = getMinutesFromDate(
-          item.endTime,
-        );
+        const endMinutes = getMinutesFromDate(item.endTime);
 
-        if (
-          startMinutes === null ||
-          endMinutes === null
-        ) {
+        if (startMinutes === null || endMinutes === null) {
           return null;
         }
 
-        return `${formatTime(
-          minutesToTimeValue(startMinutes),
-        )} – ${formatTime(
+        return `${formatTime(minutesToTimeValue(startMinutes))} – ${formatTime(
           minutesToTimeValue(endMinutes),
         )}`;
       })
@@ -261,8 +218,8 @@ export function TimeSlotPicker({
             </p>
 
             <p className="mt-1 text-xs leading-5 text-red-600">
-              This technician has no working schedule on the
-              selected day. Choose another date.
+              This technician has no working schedule on the selected day.
+              Choose another date.
             </p>
           </div>
         </div>
@@ -280,9 +237,7 @@ export function TimeSlotPicker({
             Technician availability
           </p>
 
-          <p className="mt-1 text-sm text-emerald-700">
-            {availabilityLabel}
-          </p>
+          <p className="mt-1 text-sm text-emerald-700">{availabilityLabel}</p>
 
           <p className="mt-1 text-xs text-emerald-600">
             Times are available in 30-minute intervals.
@@ -302,18 +257,14 @@ export function TimeSlotPicker({
           <select
             id="startTime"
             value={selectedStartTime}
-            disabled={
-              disabled || !startTimeOptions.length
-            }
+            disabled={disabled || !startTimeOptions.length}
             onChange={(event) => {
               onStartTimeChange(event.target.value);
               onEndTimeChange("");
             }}
             className="h-11 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            <option value="">
-              Select start time
-            </option>
+            <option value="">Select start time</option>
 
             {startTimeOptions.map((time) => (
               <option key={time} value={time}>
@@ -334,19 +285,11 @@ export function TimeSlotPicker({
           <select
             id="endTime"
             value={selectedEndTime}
-            disabled={
-              disabled ||
-              !selectedStartTime ||
-              !endTimeOptions.length
-            }
-            onChange={(event) =>
-              onEndTimeChange(event.target.value)
-            }
+            disabled={disabled || !selectedStartTime || !endTimeOptions.length}
+            onChange={(event) => onEndTimeChange(event.target.value)}
             className="h-11 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            <option value="">
-              Select end time
-            </option>
+            <option value="">Select end time</option>
 
             {endTimeOptions.map((time) => (
               <option key={time} value={time}>

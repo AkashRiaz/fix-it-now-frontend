@@ -3,6 +3,7 @@
 
 import { useState } from "react";
 import {
+  CalendarX2,
   Clock3,
   Tag,
   Wrench,
@@ -21,7 +22,17 @@ export function TechnicianServices({
   const [bookingOpen, setBookingOpen] =
     useState(false);
 
+    // console.log("technician-------------------->>>>", technician);
+
+  const hasAvailability =
+    Array.isArray(technician?.availability) &&
+    technician.availability.length > 0;
+
   const handleOpenBooking = (service: any) => {
+    if (!hasAvailability) {
+      return;
+    }
+
     setSelectedService(service);
     setBookingOpen(true);
   };
@@ -64,6 +75,22 @@ export function TechnicianServices({
           Choose a service and select an available booking slot.
         </p>
       </div>
+
+      {!hasAvailability && (
+        <div className="mb-6 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4">
+          <CalendarX2 className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
+
+          <div>
+            <p className="text-sm font-semibold text-amber-800">
+              Booking is currently unavailable
+            </p>
+
+            <p className="mt-1 text-sm text-amber-700">
+              This technician has not added a working schedule yet.
+            </p>
+          </div>
+        </div>
+      )}
 
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {services.map((service: any) => (
@@ -133,25 +160,30 @@ export function TechnicianServices({
               <Button
                 type="button"
                 className="w-full"
+                disabled={!hasAvailability}
                 onClick={() =>
                   handleOpenBooking(service)
                 }
               >
-                Book Service
+                {hasAvailability
+                  ? "Book Service"
+                  : "No Availability"}
               </Button>
             </div>
           </article>
         ))}
       </div>
 
-      {bookingOpen && selectedService && (
-        <BookingModal
-          open={bookingOpen}
-          service={selectedService}
-          technician={technician}
-          onClose={handleCloseBooking}
-        />
-      )}
+      {bookingOpen &&
+        selectedService &&
+        hasAvailability && (
+          <BookingModal
+            open={bookingOpen}
+            service={selectedService}
+            technician={technician}
+            onClose={handleCloseBooking}
+          />
+        )}
     </section>
   );
 }

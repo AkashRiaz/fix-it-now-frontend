@@ -20,20 +20,15 @@ export const getTechnicianAction = async (id: string) => {
       "Content-Type": "application/json",
     },
 
-    cache: "force-cache",
-
-    next: {
-      revalidate: 60 * 60 * 24,
-      tags: ["technician"],
-    },
+    cache: "no-store",
   });
 
   const result = await res.json();
 
+  // console.log("getTechnicianAction result:", result);
+
   return result;
 };
-
-
 
 export const getAllTechniciansAction = async ({
   query,
@@ -45,27 +40,21 @@ export const getAllTechniciansAction = async ({
   if (query?.searchTerm) {
     params.set(
       "searchTerm",
-      Array.isArray(query.searchTerm)
-        ? query.searchTerm[0]
-        : query.searchTerm,
+      Array.isArray(query.searchTerm) ? query.searchTerm[0] : query.searchTerm,
     );
   }
 
   if (query?.location) {
     params.set(
       "location",
-      Array.isArray(query.location)
-        ? query.location[0]
-        : query.location,
+      Array.isArray(query.location) ? query.location[0] : query.location,
     );
   }
 
   if (query?.status) {
     params.set(
       "status",
-      Array.isArray(query.status)
-        ? query.status[0]
-        : query.status,
+      Array.isArray(query.status) ? query.status[0] : query.status,
     );
   }
 
@@ -90,36 +79,25 @@ export const getAllTechniciansAction = async ({
   if (query?.sortBy) {
     params.set(
       "sortBy",
-      Array.isArray(query.sortBy)
-        ? query.sortBy[0]
-        : query.sortBy,
+      Array.isArray(query.sortBy) ? query.sortBy[0] : query.sortBy,
     );
   }
 
   if (query?.sortOrder) {
     params.set(
       "sortOrder",
-      Array.isArray(query.sortOrder)
-        ? query.sortOrder[0]
-        : query.sortOrder,
+      Array.isArray(query.sortOrder) ? query.sortOrder[0] : query.sortOrder,
     );
   }
 
   if (query?.page) {
-    params.set(
-      "page",
-      Array.isArray(query.page)
-        ? query.page[0]
-        : query.page,
-    );
+    params.set("page", Array.isArray(query.page) ? query.page[0] : query.page);
   }
 
   if (query?.limit) {
     params.set(
       "limit",
-      Array.isArray(query.limit)
-        ? query.limit[0]
-        : query.limit,
+      Array.isArray(query.limit) ? query.limit[0] : query.limit,
     );
   }
 

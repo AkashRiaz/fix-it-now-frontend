@@ -10,7 +10,9 @@ import { BookingModal } from "../technicians/BookingModal";
 export function ServiceCard({ service }: { service: IService }) {
   const [bookingOpen, setBookingOpen] = useState(false);
 
-  const technician = service?.technician;
+  const technician = service.technician;
+
+  const hasAvailability = technician?.availability?.length > 0;
 
   const technicianName = technician?.user?.name || "Unknown Technician";
 
@@ -117,21 +119,20 @@ export function ServiceCard({ service }: { service: IService }) {
           <Button
             type="button"
             className="w-full"
-            disabled={!technician}
-            onClick={handleOpenBooking}
+            disabled={!hasAvailability}
+            onClick={() => setBookingOpen(true)}
           >
-            <CalendarCheck className="mr-2 h-4 w-4" />
-            Book Service
+            {hasAvailability ? "Book Service" : "No Availability"}
           </Button>
         </div>
       </article>
 
-      {bookingOpen && technician && (
+      {bookingOpen && hasAvailability && (
         <BookingModal
           open={bookingOpen}
           service={service}
           technician={technician}
-          onClose={handleCloseBooking}
+          onClose={() => setBookingOpen(false)}
         />
       )}
     </>

@@ -129,6 +129,10 @@ export function BookingModal({
     onClose();
   };
 
+  // console.log("Booking technician:", technician);
+
+  // console.log("Booking availability:", technician?.availability);
+
   const handleBooking = () => {
     if (!selectedDate) {
       toast.error("Please select a service date");
