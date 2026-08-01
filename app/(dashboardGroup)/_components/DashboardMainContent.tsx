@@ -9,6 +9,7 @@ interface DashboardMainContentProps {
 
 const DashboardMainContent = ({ children }: DashboardMainContentProps) => {
   const pathname = usePathname();
+
   const mainReference = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
@@ -22,12 +23,7 @@ const DashboardMainContent = ({ children }: DashboardMainContentProps) => {
   return (
     <main
       ref={mainReference}
-      className="
-        min-w-0
-        flex-1
-        overflow-y-auto
-        bg-background
-      "
+      className="min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto bg-background"
     >
       {children}
     </main>

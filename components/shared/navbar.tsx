@@ -8,8 +8,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
-import { LayoutDashboard, LogOut, User, Wrench } from "lucide-react";
+import { LayoutDashboard, LogOut, Menu, User, Wrench } from "lucide-react";
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -32,18 +41,6 @@ const navItems = [
     label: "Technicians",
     href: "/technicians",
   },
-  // {
-  //   label: "How It Works",
-  //   href: "/#how-it-works",
-  // },
-  // {
-  //   label: "Become Technician",
-  //   href: "/technician/register",
-  // },
-  // {
-  //   label: "Contact",
-  //   href: "/contact",
-  // },
 ];
 
 type UserMenuAction = "dashboard" | "profile" | "logout";
@@ -126,17 +123,145 @@ export function Navbar({ user }: NavbarProps) {
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b bg-white/80 backdrop-blur-lg">
+    <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/90 backdrop-blur-lg">
       <nav>
-        <div className="mx-auto flex h-18 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:h-18 sm:px-6 lg:px-8">
+          {/* Mobile menu */}
+          <div className="flex items-center gap-2 lg:hidden">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Open navigation menu"
+                  className="shrink-0"
+                >
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+
+              <SheetContent side="left" className="w-[290px] p-0 sm:w-[340px]">
+                <SheetHeader className="border-b px-5 py-5 text-left">
+                  <SheetTitle asChild>
+                    <Link href="/" className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-white">
+                        <Wrench size={21} />
+                      </div>
+
+                      <div>
+                        <p className="text-xl font-extrabold tracking-tight text-primary">
+                          FixItNow
+                        </p>
+
+                        <p className="text-xs font-normal text-muted-foreground">
+                          Trusted Home Services
+                        </p>
+                      </div>
+                    </Link>
+                  </SheetTitle>
+
+                  <SheetDescription className="sr-only">
+                    Main navigation menu
+                  </SheetDescription>
+                </SheetHeader>
+
+                <div className="flex h-[calc(100vh-81px)] flex-col">
+                  <div className="flex-1 space-y-1 overflow-y-auto px-4 py-5">
+                    {navItems.map((item) => {
+                      const isActive = isActiveMenu(item.href);
+
+                      return (
+                        <SheetClose key={item.href} asChild>
+                          <Link
+                            href={item.href}
+                            aria-current={isActive ? "page" : undefined}
+                            className={`flex items-center rounded-xl px-4 py-3 text-sm font-medium transition-colors ${
+                              isActive
+                                ? "bg-primary/10 text-primary"
+                                : "text-slate-700 hover:bg-slate-100 hover:text-primary"
+                            }`}
+                          >
+                            {item.label}
+                          </Link>
+                        </SheetClose>
+                      );
+                    })}
+                  </div>
+
+                  {!user?.success && (
+                    <div className="border-t p-4">
+                      <SheetClose asChild>
+                        <Button asChild className="w-full rounded-xl">
+                          <Link href="/login">Login</Link>
+                        </Button>
+                      </SheetClose>
+                    </div>
+                  )}
+
+                  {user?.success && (
+                    <div className="border-t bg-slate-50 p-4">
+                      <div className="mb-4 rounded-xl border bg-white p-4">
+                        <p className="truncate font-semibold text-slate-900">
+                          {user?.data?.name || "User"}
+                        </p>
+
+                        <p className="mt-1 truncate text-xs text-muted-foreground">
+                          {user?.data?.email || ""}
+                        </p>
+
+                        <span className="mt-2 inline-flex rounded-full bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
+                          {user?.data?.role || ""}
+                        </span>
+                      </div>
+
+                      <div className="space-y-2">
+                        {userMenuItems.map((item) => {
+                          const Icon = item.icon;
+
+                          return (
+                            <SheetClose key={item.action} asChild>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handleUserMenuAction(item.action)
+                                }
+                                className="flex w-full items-center rounded-xl px-4 py-3 text-left text-sm font-medium text-slate-700 transition hover:bg-white hover:text-primary"
+                              >
+                                <Icon className="mr-3 h-4 w-4" />
+
+                                {item.label}
+                              </button>
+                            </SheetClose>
+                          );
+                        })}
+
+                        <SheetClose asChild>
+                          <button
+                            type="button"
+                            onClick={() => handleUserMenuAction("logout")}
+                            className="flex w-full items-center rounded-xl px-4 py-3 text-left text-sm font-medium text-red-600 transition hover:bg-red-50"
+                          >
+                            <LogOut className="mr-3 h-4 w-4" />
+                            Logout
+                          </button>
+                        </SheetClose>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </SheetContent>
+            </Sheet>
+          </div>
+
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-white">
+          <Link href="/" className="flex min-w-0 items-center gap-2">
+            <div className="hidden h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-white sm:flex">
               <Wrench size={22} />
             </div>
 
-            <div>
-              <span className="text-2xl font-extrabold tracking-tight text-primary">
+            <div className="min-w-0">
+              <span className="block truncate text-xl font-extrabold tracking-tight text-primary sm:text-2xl">
                 FixItNow
               </span>
 
@@ -175,11 +300,12 @@ export function Navbar({ user }: NavbarProps) {
           </div>
 
           {/* Right section */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             {!user?.success ? (
               <Button
                 asChild
-                className="rounded-full px-6 font-semibold shadow-md"
+                size="sm"
+                className="rounded-full px-4 font-semibold shadow-sm sm:px-6"
               >
                 <Link href="/login">Login</Link>
               </Button>
@@ -189,20 +315,24 @@ export function Navbar({ user }: NavbarProps) {
                   <button
                     type="button"
                     aria-label="Open user menu"
-                    className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 transition hover:bg-primary/20"
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-primary/10 bg-primary/10 transition hover:bg-primary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
                   >
                     <User className="h-5 w-5 text-primary" />
                   </button>
                 </DropdownMenuTrigger>
 
-                <DropdownMenuContent align="end" className="w-60 rounded-xl">
+                <DropdownMenuContent
+                  align="end"
+                  sideOffset={10}
+                  className="w-64 rounded-xl"
+                >
                   <DropdownMenuLabel>
                     <div className="space-y-1">
-                      <p className="font-semibold">
+                      <p className="truncate font-semibold">
                         {user?.data?.name || "User"}
                       </p>
 
-                      <p className="text-xs text-muted-foreground">
+                      <p className="truncate text-xs text-muted-foreground">
                         {user?.data?.email || ""}
                       </p>
 
@@ -224,7 +354,6 @@ export function Navbar({ user }: NavbarProps) {
                         className="cursor-pointer"
                       >
                         <Icon className="mr-2 h-4 w-4" />
-
                         {item.label}
                       </DropdownMenuItem>
                     );

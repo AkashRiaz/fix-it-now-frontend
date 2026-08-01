@@ -536,4 +536,68 @@ export type AvailabilityActionResult = {
   message: string;
   data?: TechnicianAvailability[];
 };
+export type AdminBookingUser = {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string | null;
+  role: "CUSTOMER" | "TECHNICIAN" | "ADMIN";
+  status: "ACTIVE" | "BLOCKED";
+  createdAt: string;
+  updatedAt: string;
+};
 
+export type AdminBookingService = {
+  id: string;
+  title: string;
+  description?: string | null;
+  price: number;
+  duration: number;
+  isFeatured: boolean;
+  technicianId: string;
+  categoryId: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type AdminBookingTechnician = {
+  id: string;
+  userId: string;
+  bio?: string | null;
+  profilePhoto?: string | null;
+  experience?: string | null;
+  location?: string | null;
+  hourlyRate?: number | null;
+  averageRating: number;
+  totalReviews: number;
+  completedJobs: number;
+  createdAt: string;
+  updatedAt: string;
+  user: AdminBookingUser;
+};
+
+export type AdminBooking = {
+  id: string;
+  bookingDate: string;
+  slotStart: string | null;
+  slotEnd: string | null;
+  status: BookingStatus;
+  totalPrice: number;
+  notes?: string | null;
+  customerAddress: string;
+  customerId: string;
+  technicianId: string;
+  serviceId: string;
+  createdAt: string;
+  updatedAt: string;
+  service: AdminBookingService;
+  customer: AdminBookingUser;
+  technician: AdminBookingTechnician;
+};
+
+export type AdminBookingsResponse = {
+  success: boolean;
+  statusCode: number;
+  message: string;
+  data: AdminBooking[];
+};

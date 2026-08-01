@@ -54,9 +54,12 @@ export function TechnicianSort() {
 
     params.set("sortBy", selectedSortBy);
     params.set("sortOrder", selectedSortOrder);
+
     params.set("page", "1");
 
-    router.replace(`${pathname}?${params.toString()}`);
+    const queryString = params.toString();
+
+    router.replace(queryString ? `${pathname}?${queryString}` : pathname);
   };
 
   return (
@@ -67,7 +70,27 @@ export function TechnicianSort() {
         value={currentValue}
         onChange={(event) => handleSortChange(event.target.value)}
         aria-label="Sort technicians"
-        className="h-10 w-full min-w-48 rounded-md border border-input bg-background pl-9 pr-3 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/30"
+        className="
+          h-10
+          w-full
+          min-w-0
+          appearance-none
+          truncate
+          rounded-md
+          border
+          border-input
+          bg-background
+          pl-9
+          pr-8
+          text-sm
+          outline-none
+          transition
+          focus:border-ring
+          focus:ring-2
+          focus:ring-ring/30
+          sm:w-auto
+          sm:min-w-48
+        "
       >
         {sortOptions.map((option) => (
           <option
