@@ -1,16 +1,23 @@
 "use client";
 
-import DataTable, { TableColumn } from "react-data-table-component";
-import { Star } from "lucide-react";
+import DataTable, {
+  TableColumn,
+} from "react-data-table-component";
+import {
+  Ban,
+  CalendarClock,
+  Star,
+} from "lucide-react";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { useDataTableStyles } from "@/hooks/useDataTableStyles";
+
 import ReviewModal from "./ReviewModal";
 import { PaymentButton } from "../payment/PaymentButton";
+import CustomerCancelBookingButton from "./CustomerCancelBookingButton";
 
 type BookingStatus =
-  | "PENDING"
   | "REQUESTED"
   | "ACCEPTED"
   | "PAID"
@@ -18,6 +25,11 @@ type BookingStatus =
   | "COMPLETED"
   | "CANCELLED"
   | "DECLINED";
+
+type PaymentStatus =
+  | "PENDING"
+  | "COMPLETED"
+  | "FAILED";
 
 export type Booking = {
   id: string;
@@ -35,8 +47,16 @@ export type Booking = {
   };
 
   bookingDate: string;
+  slotStart?: string | null;
+  slotEnd?: string | null;
+
   totalPrice: number;
   status: BookingStatus;
+
+  payment?: {
+    id?: string;
+    status: PaymentStatus;
+  } | null;
 
   review?: {
     id: string;
@@ -45,29 +65,101 @@ export type Booking = {
   } | null;
 };
 
-const statusStyles: Record<BookingStatus, string> = {
-  PENDING: "border-amber-200 bg-amber-50 text-amber-700",
-  REQUESTED: "border-amber-200 bg-amber-50 text-amber-700",
-  ACCEPTED: "border-blue-200 bg-blue-50 text-blue-700",
-  PAID: "border-purple-200 bg-purple-50 text-purple-700",
-  IN_PROGRESS: "border-emerald-200 bg-emerald-50 text-emerald-700",
-  COMPLETED: "border-slate-200 bg-slate-100 text-slate-700",
-  CANCELLED: "border-rose-200 bg-rose-50 text-rose-700",
-  DECLINED: "border-rose-200 bg-rose-50 text-rose-700",
+const statusStyles: Record<
+  BookingStatus,
+  string
+> = {
+  REQUESTED:
+    "border-amber-200 bg-amber-50 text-amber-700",
+
+  ACCEPTED:
+    "border-blue-200 bg-blue-50 text-blue-700",
+
+  PAID:
+    "border-purple-200 bg-purple-50 text-purple-700",
+
+  IN_PROGRESS:
+    "border-emerald-200 bg-emerald-50 text-emerald-700",
+
+  COMPLETED:
+    "border-slate-200 bg-slate-100 text-slate-700",
+
+  CANCELLED:
+    "border-rose-200 bg-rose-50 text-rose-700",
+
+  DECLINED:
+    "border-rose-200 bg-rose-50 text-rose-700",
+};
+
+const formatStatus = (
+  status: BookingStatus,
+) => {
+  return status
+    .toLowerCase()
+    .split("_")
+    .map(
+      (word) =>
+        word.charAt(0).toUpperCase() +
+        word.slice(1),
+    )
+    .join(" ");
+};
+
+const formatBookingDate = (
+  value: string,
+) => {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return {
+      date: "N/A",
+      time: "N/A",
+    };
+  }
+
+  return {
+    date: date.toLocaleDateString(
+      "en-US",
+      {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      },
+    ),
+
+    time: date.toLocaleTimeString(
+      "en-US",
+      {
+        hour: "numeric",
+        minute: "2-digit",
+      },
+    ),
+  };
 };
 
 interface BookingTableProps {
   data: Booking[];
 }
 
-const BookingTable = ({ data }: BookingTableProps) => {
-  const customTableStyles = useDataTableStyles();
+const BookingTable = ({
+  data,
+}: BookingTableProps) => {
+  const customTableStyles =
+    useDataTableStyles();
 
-  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [
+    selectedBooking,
+    setSelectedBooking,
+  ] = useState<Booking | null>(null);
 
-  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [
+    reviewModalOpen,
+    setReviewModalOpen,
+  ] = useState(false);
 
-  const handleOpenReview = (booking: Booking) => {
+  const handleOpenReview = (
+    booking: Booking,
+  ) => {
     setSelectedBooking(booking);
     setReviewModalOpen(true);
   };
@@ -82,59 +174,78 @@ const BookingTable = ({ data }: BookingTableProps) => {
       name: "Service",
       center: true,
       grow: 1.5,
+
       cell: (row) => (
         <span className="font-medium text-slate-900">
           {row.service?.title || "N/A"}
         </span>
       ),
     },
+
     {
       name: "Technician",
       center: true,
+
       cell: (row) => (
         <span className="text-slate-700">
-          {row.technician?.user?.name || "Unassigned"}
+          {row.technician?.user?.name ||
+            "Unassigned"}
         </span>
       ),
     },
+
     {
-      name: "Date",
+      name: "Schedule",
       center: true,
+      grow: 1.3,
+
       cell: (row) => {
-        const bookingDate = new Date(row.bookingDate);
+        const bookingStart =
+          row.slotStart || row.bookingDate;
+
+        const start =
+          formatBookingDate(bookingStart);
+
+        const end = row.slotEnd
+          ? formatBookingDate(row.slotEnd)
+          : null;
 
         return (
           <div className="py-3 text-center">
             <p className="font-medium text-slate-900">
-              {bookingDate.toLocaleDateString("en-US", {
-                month: "short",
-                day: "numeric",
-                year: "numeric",
-              })}
+              {start.date}
             </p>
 
-            <p className="text-xs text-slate-500">
-              {bookingDate.toLocaleTimeString("en-US", {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
+            <p className="mt-1 flex items-center justify-center gap-1 text-xs text-slate-500">
+              <CalendarClock className="size-3.5" />
+
+              {start.time}
+
+              {end ? ` – ${end.time}` : ""}
             </p>
           </div>
         );
       },
     },
+
     {
       name: "Price",
       center: true,
+
       cell: (row) => (
         <span className="font-semibold text-slate-900">
-          ${Number(row.totalPrice || 0).toLocaleString()}
+          $
+          {Number(
+            row.totalPrice || 0,
+          ).toLocaleString()}
         </span>
       ),
     },
+
     {
       name: "Status",
       center: true,
+
       cell: (row) => (
         <span
           className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold ${
@@ -142,28 +253,75 @@ const BookingTable = ({ data }: BookingTableProps) => {
             "border-gray-200 bg-gray-100 text-gray-800"
           }`}
         >
-          {row.status.replaceAll("_", " ")}
+          {formatStatus(row.status)}
         </span>
       ),
     },
+
     {
       name: "Action",
       center: true,
-      grow: 1.2,
+      grow: 1.8,
+      minWidth: "230px",
+
       cell: (row) => {
-        if (row.status === "PENDING" || row.status === "REQUESTED") {
+        const paymentCompleted =
+          row.payment?.status ===
+          "COMPLETED";
+
+        const canCancel =
+          (
+            row.status === "REQUESTED" ||
+            row.status === "ACCEPTED"
+          ) &&
+          !paymentCompleted;
+
+        if (row.status === "REQUESTED") {
           return (
-            <span className="text-xs text-slate-500">
-              Waiting for technician
-            </span>
+            <div className="flex flex-wrap items-center justify-center gap-2 py-2">
+              <span className="text-xs text-slate-500">
+                Waiting for technician
+              </span>
+
+              {canCancel && (
+                <CustomerCancelBookingButton
+                  bookingId={row.id}
+                  status={row.status}
+                  paymentStatus={
+                    row.payment?.status ||
+                    null
+                  }
+                />
+              )}
+            </div>
           );
         }
 
         if (row.status === "ACCEPTED") {
-          return <PaymentButton bookingId={row.id} />;
+          return (
+            <div className="flex flex-wrap items-center justify-center gap-2 py-2">
+              <PaymentButton
+                bookingId={row.id}
+              />
+
+              {canCancel && (
+                <CustomerCancelBookingButton
+                  bookingId={row.id}
+                  status={row.status}
+                  paymentStatus={
+                    row.payment?.status ||
+                    null
+                  }
+                />
+              )}
+            </div>
+          );
         }
 
-        if (row.status === "PAID") {
+        if (
+          row.status === "PAID" ||
+          paymentCompleted
+        ) {
           return (
             <span className="text-xs font-medium text-purple-600">
               Payment completed
@@ -183,19 +341,25 @@ const BookingTable = ({ data }: BookingTableProps) => {
           if (row.review) {
             return (
               <div className="flex items-center justify-center gap-1 text-sm font-medium text-amber-600">
-                <Star className="h-4 w-4 fill-current" />
-                <span>{row.review.rating}</span>
+                <Star className="size-4 fill-current" />
+
+                <span>
+                  {row.review.rating}
+                </span>
               </div>
             );
           }
 
           return (
             <Button
+              type="button"
               size="sm"
               variant="outline"
-              onClick={() => handleOpenReview(row)}
+              onClick={() =>
+                handleOpenReview(row)
+              }
             >
-              <Star className="mr-1 h-4 w-4" />
+              <Star className="mr-1 size-4" />
               Review
             </Button>
           );
@@ -203,7 +367,8 @@ const BookingTable = ({ data }: BookingTableProps) => {
 
         if (row.status === "CANCELLED") {
           return (
-            <span className="text-xs font-medium text-rose-500">
+            <span className="flex items-center gap-1 text-xs font-medium text-rose-500">
+              <Ban className="size-3.5" />
               Booking cancelled
             </span>
           );
@@ -211,7 +376,8 @@ const BookingTable = ({ data }: BookingTableProps) => {
 
         if (row.status === "DECLINED") {
           return (
-            <span className="text-xs font-medium text-rose-500">
+            <span className="flex items-center gap-1 text-xs font-medium text-rose-500">
+              <Ban className="size-3.5" />
               Booking declined
             </span>
           );

@@ -10,9 +10,7 @@ import {
   LoaderCircle,
   MapPin,
   NotebookPen,
-  UserRound,
   Wrench,
-  X,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -35,7 +33,8 @@ import { Textarea } from "@/components/ui/textarea";
 
 import { createBookingAction } from "../../_actions/bookingActions";
 import { TimeSlotPicker } from "./TimeSlotPicker";
-import {
+
+import type {
   BookingService,
   BookingTechnician,
   CreateBookingPayload,
@@ -44,37 +43,40 @@ import {
 interface BookingModalProps {
   service: BookingService;
   technician: BookingTechnician;
-  open?: boolean;
+  open: boolean;
   onClose: () => void;
 }
 
-const combineDateAndTime = (selectedDate: Date, timeValue: string) => {
+const combineDateAndTimeAsUTC = (selectedDate: Date, timeValue: string) => {
   const [hours, minutes] = timeValue.split(":").map(Number);
 
-  const result = new Date(selectedDate);
-
-  result.setHours(hours, minutes, 0, 0);
-
-  return result;
+  return new Date(
+    Date.UTC(
+      selectedDate.getFullYear(),
+      selectedDate.getMonth(),
+      selectedDate.getDate(),
+      hours,
+      minutes,
+      0,
+      0,
+    ),
+  );
 };
 
-const formatTime = (value: string) => {
+const formatTimeValue = (value: string) => {
   const [hours, minutes] = value.split(":").map(Number);
 
-  const date = new Date();
+  const suffix = hours >= 12 ? "PM" : "AM";
 
-  date.setHours(hours, minutes, 0, 0);
+  const displayHour = hours % 12 || 12;
 
-  return date.toLocaleTimeString("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-  });
+  return `${displayHour}:${String(minutes).padStart(2, "0")} ${suffix}`;
 };
 
 export function BookingModal({
   service,
   technician,
-  open = true,
+  open,
   onClose,
 }: BookingModalProps) {
   const [calendarOpen, setCalendarOpen] = useState(false);
@@ -86,6 +88,7 @@ export function BookingModal({
   const [selectedEndTime, setSelectedEndTime] = useState("");
 
   const [notes, setNotes] = useState("");
+
   const [address, setAddress] = useState("");
 
   const [pending, startTransition] = useTransition();
@@ -108,8 +111,10 @@ export function BookingModal({
 
     return {
       date: format(selectedDate, "EEEE, MMMM d, yyyy"),
-      startTime: formatTime(selectedStartTime),
-      endTime: formatTime(selectedEndTime),
+
+      startTime: formatTimeValue(selectedStartTime),
+
+      endTime: formatTimeValue(selectedEndTime),
     };
   }, [selectedDate, selectedStartTime, selectedEndTime]);
 
@@ -123,69 +128,76 @@ export function BookingModal({
   };
 
   const handleClose = () => {
-    if (pending) return;
+    if (pending) {
+      return;
+    }
 
     resetForm();
     onClose();
   };
 
-  // console.log("Booking technician:", technician);
-
-  // console.log("Booking availability:", technician?.availability);
-
   const handleBooking = () => {
     if (!selectedDate) {
       toast.error("Please select a service date");
+
       return;
     }
 
     if (!selectedStartTime || !selectedEndTime) {
-      toast.error("Please select the booking start and end time");
+      toast.error("Please select start and end time");
+
       return;
     }
 
     if (!address.trim()) {
       toast.error("Please enter the service address");
+
       return;
     }
 
-    const slotStart = combineDateAndTime(selectedDate, selectedStartTime);
+    const slotStart = combineDateAndTimeAsUTC(selectedDate, selectedStartTime);
 
-    const slotEnd = combineDateAndTime(selectedDate, selectedEndTime);
+    const slotEnd = combineDateAndTimeAsUTC(selectedDate, selectedEndTime);
 
     if (slotStart >= slotEnd) {
       toast.error("End time must be after start time");
-      return;
-    }
 
-    if (slotStart <= new Date()) {
-      toast.error("The booking time must be in the future");
       return;
     }
 
     const payload: CreateBookingPayload = {
       slotStart: slotStart.toISOString(),
+
       slotEnd: slotEnd.toISOString(),
+
       notes: notes.trim() || undefined,
+
       customerAddress: address.trim(),
+
       serviceId: service.id,
     };
 
     startTransition(async () => {
-      const result = await createBookingAction(payload);
+      try {
+        const result = await createBookingAction(payload);
 
-      if (!result?.success) {
-        toast.error(result?.message || "Failed to create booking");
+        if (!result?.success) {
+          toast.error(result?.message || "Failed to create booking");
 
-        return;
+          return;
+        }
+
+        toast.success(
+          result?.message || "Booking request submitted successfully",
+        );
+
+        resetForm();
+        onClose();
+      } catch (error) {
+        console.error("Create booking error:", error);
+
+        toast.error("Something went wrong while creating the booking");
       }
-
-      toast.success(
-        result?.message || "Booking request submitted successfully",
-      );
-
-      resetForm();
-      onClose();
     });
   };
 
@@ -204,19 +216,14 @@ export function BookingModal({
     >
       <DialogContent className="max-h-[92vh] overflow-y-auto p-0 sm:max-w-2xl">
         <DialogHeader className="border-b bg-slate-50 px-6 py-5 text-left">
-          <div className="flex items-start justify-between gap-4 pr-8">
-            <div>
-              <DialogTitle className="text-2xl">Book Service</DialogTitle>
+          <DialogTitle className="text-2xl">Book Service</DialogTitle>
 
-              <DialogDescription className="mt-1">
-                Choose a date and available booking time.
-              </DialogDescription>
-            </div>
-          </div>
+          <DialogDescription className="mt-1">
+            Choose a date and an available booking time.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6 px-6 pb-6">
-          {/* Service information */}
           <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
             <div className="flex items-start gap-4">
               <div className="rounded-xl bg-primary/10 p-3 text-primary">
@@ -244,10 +251,9 @@ export function BookingModal({
             </div>
           </div>
 
-          {/* Technician information */}
           <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
             <div className="relative flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary/10 text-sm font-bold text-primary">
-              {technician?.profilePhoto ? (
+              {technician.profilePhoto ? (
                 <Image
                   src={technician.profilePhoto}
                   alt={technicianName}
@@ -268,7 +274,6 @@ export function BookingModal({
             </div>
           </div>
 
-          {/* Date picker */}
           <div className="space-y-2">
             <Label>
               <CalendarDays className="mr-1 inline size-4" />
@@ -309,14 +314,13 @@ export function BookingModal({
                     }
                   }}
                   disabled={{
-                    before: new Date(),
+                    before: today,
                   }}
                 />
               </PopoverContent>
             </Popover>
           </div>
 
-          {/* Time selection */}
           <div className="space-y-2">
             <Label>
               <Clock3 className="mr-1 inline size-4" />
@@ -325,7 +329,7 @@ export function BookingModal({
 
             <TimeSlotPicker
               selectedDate={selectedDate}
-              availability={technician?.availability ?? []}
+              availability={technician.availability ?? []}
               selectedStartTime={selectedStartTime}
               selectedEndTime={selectedEndTime}
               onStartTimeChange={setSelectedStartTime}
@@ -334,7 +338,6 @@ export function BookingModal({
             />
           </div>
 
-          {/* Selected summary */}
           {selectedSlotSummary && (
             <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
               <p className="text-sm font-semibold text-slate-900">
@@ -355,7 +358,6 @@ export function BookingModal({
             </div>
           )}
 
-          {/* Address */}
           <div className="space-y-2">
             <Label htmlFor="customerAddress">
               <MapPin className="mr-1 inline size-4" />
@@ -372,7 +374,6 @@ export function BookingModal({
             />
           </div>
 
-          {/* Notes */}
           <div className="space-y-2">
             <Label htmlFor="bookingNotes">
               <NotebookPen className="mr-1 inline size-4" />
@@ -384,7 +385,7 @@ export function BookingModal({
               value={notes}
               disabled={pending}
               onChange={(event) => setNotes(event.target.value)}
-              placeholder="Describe the issue or add instructions for the technician"
+              placeholder="Describe the issue or add instructions"
               className="min-h-24 resize-none"
               maxLength={1000}
             />
@@ -394,7 +395,6 @@ export function BookingModal({
             </p>
           </div>
 
-          {/* Submit */}
           <div className="flex flex-col-reverse gap-3 border-t pt-5 sm:flex-row sm:justify-end">
             <Button
               type="button"
