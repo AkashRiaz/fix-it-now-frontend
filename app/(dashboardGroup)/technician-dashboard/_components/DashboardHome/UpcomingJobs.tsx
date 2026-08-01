@@ -115,7 +115,7 @@ const UpcomingJobs = ({
                     </span>
 
                     <span className="font-bold text-slate-900">
-                      ৳
+                      $
                       {Number(
                         booking?.totalPrice ?? 0,
                       ).toLocaleString()}

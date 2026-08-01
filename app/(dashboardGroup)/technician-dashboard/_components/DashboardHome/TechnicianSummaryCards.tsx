@@ -22,7 +22,7 @@ const TechnicianSummaryCards = ({ summary }: TechnicianSummaryCardsProps) => {
     },
     {
       title: "Total Earnings",
-      value: `৳${Number(summary?.totalEarnings ?? 0).toLocaleString()}`,
+      value: `$${Number(summary?.totalEarnings ?? 0).toLocaleString()}`,
       description: "From completed payments",
       icon: Banknote,
       iconWrapper: "bg-emerald-50 text-emerald-600",
