@@ -60,6 +60,11 @@ export const registerAction = async (
 
   const result = await res.json();
 
+
+  if(!result?.success) {
+    return result;
+  }
+
   if (result?.success) {
     redirect("/login");
   }
@@ -87,6 +92,10 @@ export const loginActions = async (
   });
 
   const result = await res.json();
+
+  if (!result?.success) {
+    return result;
+  }
 
   if (result?.success) {
     const cookieStore = await cookies();

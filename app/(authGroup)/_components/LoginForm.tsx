@@ -37,6 +37,8 @@ const LoginForm = () => {
     });
   };
 
+  console.log("LoginForm state:", state);
+
   useEffect(() => {
     if (!state) return;
 
