@@ -1,24 +1,31 @@
-import React, { Suspense } from "react";
+import { Suspense } from "react";
+import { TechnicianToolbar } from "../_components/technicians/technicians/TechnicianToolbar";
 import TechnicianListSkeleton from "../_components/technicians/technicians/TechnicianListSkeleton";
 import TechnicianList from "../_components/technicians/technicians/TechnicianList";
+type TechniciansPageProps = {
+  searchParams?: Promise<{
+    [key: string]: string | string[] | undefined;
+  }>;
+};
 
-const TechniciansPage = () => {
+const TechniciansPage = ({ searchParams }: TechniciansPageProps) => {
   return (
-    <div className="mx-auto max-w-7xl space-y-6 px-4 py-10 sm:px-6 lg:px-8 md:mb-10">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">All Technicians</h1>
+    <main className="mx-auto max-w-7xl space-y-8 px-4 py-10 sm:px-6 lg:px-8">
+      <div>
+        <h1 className="text-3xl font-bold">Find Trusted Technicians</h1>
 
-          <p className="text-sm text-muted-foreground">
-            Browse and manage all the technicians registered on the platform.
-          </p>
-        </div>
+        <p className="mt-2 text-muted-foreground">
+          Search and filter experienced professionals based on location, rating
+          and hourly rate.
+        </p>
       </div>
 
+      <TechnicianToolbar />
+
       <Suspense fallback={<TechnicianListSkeleton />}>
-        <TechnicianList />
+        <TechnicianList searchParams={searchParams} />
       </Suspense>
-    </div>
+    </main>
   );
 };
 
