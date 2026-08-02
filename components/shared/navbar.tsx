@@ -42,6 +42,10 @@ const navItems = [
     label: "Technicians",
     href: "/technicians",
   },
+  {
+    label: "Register as Technician",
+    href: "/technicians/register",
+  },
 ];
 
 type UserMenuAction = "dashboard" | "profile" | "logout";
@@ -82,18 +86,26 @@ export function Navbar({ user }: NavbarProps) {
 
   const userMenuItems = getUserMenuItems(user?.data?.role);
 
+  const activeNavHref = [...navItems]
+    .sort((firstItem, secondItem) => {
+      return secondItem.href.length - firstItem.href.length;
+    })
+    .find((item) => {
+      if (item.href.includes("#")) {
+        return false;
+      }
+
+      if (item.href === "/") {
+        return pathname === "/";
+      }
+
+      return pathname === item.href || pathname.startsWith(`${item.href}/`);
+    })?.href;
+
   const isActiveMenu = (href: string) => {
-    if (href.includes("#")) {
-      return false;
-    }
-
-    if (href === "/") {
-      return pathname === "/";
-    }
-
-    return pathname === href || pathname.startsWith(`${href}/`);
+    return href === activeNavHref;
   };
-
+  
   const handleUserMenuAction = async (action: UserMenuAction) => {
     if (action === "logout") {
       await logout();

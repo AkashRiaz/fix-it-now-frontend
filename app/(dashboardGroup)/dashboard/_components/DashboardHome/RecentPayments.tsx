@@ -109,7 +109,7 @@ const RecentPayments = ({
 
               <div className="flex items-center justify-between gap-4 sm:flex-col sm:items-end">
                 <p className="text-lg font-bold text-slate-900">
-                  ৳
+                  $
                   {Number(
                     payment?.amount ?? 0,
                   ).toLocaleString()}
