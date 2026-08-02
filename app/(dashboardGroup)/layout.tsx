@@ -12,6 +12,8 @@ import { getMe } from "@/service/getMe";
 import DashboardMainContent from "./_components/DashboardMainContent";
 import DashboardSidebar from "./_components/DashboardSidebar";
 
+export const dynamic = "force-dynamic";
+
 const DashboardGroupLayout = async ({
   children,
 }: {
@@ -32,9 +34,7 @@ const DashboardGroupLayout = async ({
               <SidebarTrigger className="-ml-1" />
 
               <div>
-                <p className="text-sm font-semibold text-foreground">
-                  Dashboard
-                </p>
+                <p className="text-sm font-semibold">Dashboard</p>
 
                 <p className="text-xs text-muted-foreground">
                   Open navigation menu
@@ -42,9 +42,7 @@ const DashboardGroupLayout = async ({
               </div>
             </div>
 
-            <DashboardMainContent>
-              {children}
-            </DashboardMainContent>
+            <DashboardMainContent>{children}</DashboardMainContent>
           </SidebarInset>
         </SidebarProvider>
       </TooltipProvider>

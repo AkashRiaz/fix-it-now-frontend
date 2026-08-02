@@ -1,132 +1,297 @@
-// import { cookies } from "next/headers";
-import { NextResponse } from "next/server";
+import type { JwtPayload } from "jsonwebtoken";
 import type { NextRequest } from "next/server";
-import { JwtPayload } from "jsonwebtoken";
+import { NextResponse } from "next/server";
+
 import { jwtUtils } from "./utils/jwt";
-import { cookies } from "next/headers";
-import { getNewAccessToken } from "./service/refreshToken";
 
 const AUTH_ROUTES = ["/login", "/register"];
 
-const PUBLIC_ROUTES = ["/", "/services", "/technicians", "/contact", "/how-it-works", "/technician/register"];
+const PUBLIC_ROUTES = [
+  "/",
+  "/services",
+  "/technicians",
+  "/contact",
+  "/how-it-works",
+  "/technician/register",
+];
 
-// This function can be marked `async` if using `await` inside
+type RefreshTokenResponse = {
+  success?: boolean;
+  data?: {
+    accessToken?: string;
+  };
+  message?: string;
+};
+
+const getDashboardPath = (role: string | null) => {
+  if (role === "ADMIN") {
+    return "/admin-dashboard";
+  }
+
+  if (role === "TECHNICIAN") {
+    return "/technician-dashboard";
+  }
+
+  if (role === "CUSTOMER") {
+    return "/dashboard";
+  }
+
+  return null;
+};
+
+const isMatchingRoute = (pathname: string, routes: string[]) => {
+  return routes.some((route) => {
+    if (route === "/") {
+      return pathname === "/";
+    }
+
+    return pathname === route || pathname.startsWith(`${route}/`);
+  });
+};
+
+const refreshAccessToken = async (
+  refreshToken: string,
+): Promise<string | null> => {
+  try {
+    const backendApiUrl = process.env.BACKEND_API_URL;
+
+    if (!backendApiUrl) {
+      console.error("BACKEND_API_URL is not configured");
+
+      return null;
+    }
+
+    const response = await fetch(`${backendApiUrl}/auth/refresh-token`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: `refreshToken=${refreshToken}`,
+      },
+      cache: "no-store",
+    });
+
+    const result = (await response
+      .json()
+      .catch(() => null)) as RefreshTokenResponse | null;
+
+    const newAccessToken = result?.data?.accessToken;
+
+    if (
+      !response.ok ||
+      !result?.success ||
+      typeof newAccessToken !== "string" ||
+      !newAccessToken.trim()
+    ) {
+      return null;
+    }
+
+    return newAccessToken;
+  } catch (error) {
+    console.error("Proxy token refresh error:", error);
+
+    return null;
+  }
+};
+
+const setAccessTokenCookie = (response: NextResponse, accessToken: string) => {
+  response.cookies.set("accessToken", accessToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 60 * 60 * 24,
+    path: "/",
+  });
+};
+
+const clearAuthenticationCookies = (response: NextResponse) => {
+  response.cookies.set("accessToken", "", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    expires: new Date(0),
+    path: "/",
+  });
+
+  response.cookies.set("refreshToken", "", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    expires: new Date(0),
+    path: "/",
+  });
+};
+
 export async function proxy(request: NextRequest) {
-  const pathName = request.nextUrl.pathname;
-
-  const cookieStore = await cookies();
-
-  // const accessToken = cookieStore.get('access_token')?.value;
+  const pathname = request.nextUrl.pathname;
 
   let accessToken = request.cookies.get("accessToken")?.value;
-  // console.log(accessToken, "accessToken-----");
+
   const refreshToken = request.cookies.get("refreshToken")?.value;
 
-  let decodedAccessToken = accessToken
-    ? jwtUtils.verifyToken(accessToken, process.env.JWT_ACCESS_SECRET as string)
-    : null;
+  const accessSecret = process.env.JWT_ACCESS_SECRET;
 
-  // console.log(decodedAccessToken, "decodedAccessToken");
+  const refreshSecret = process.env.JWT_REFRESH_SECRET;
 
-  const decodedRefreshToken = refreshToken
-    ? jwtUtils.verifyToken(
-        refreshToken,
-        process.env.JWT_REFRESH_SECRET as string,
-      )
-    : null;
+  let decodedAccessToken =
+    accessToken && accessSecret
+      ? jwtUtils.verifyToken(accessToken, accessSecret)
+      : null;
 
-    if (!decodedAccessToken?.success && decodedRefreshToken?.success) {
-      const result = await getNewAccessToken();
+  const decodedRefreshToken =
+    refreshToken && refreshSecret
+      ? jwtUtils.verifyToken(refreshToken, refreshSecret)
+      : null;
 
-      if (result.success && result.data) {
-        const newAccessToken = result.data.accessToken;
-        // console.log(newAccessToken, "newAccessToken");
-        cookieStore.set("accessToken", newAccessToken, {
-          httpOnly: true,
-          maxAge: 60 * 60 * 24, // 1 day
-          sameSite: "lax",
-        });
+  let refreshedAccessToken: string | null = null;
 
-        accessToken = newAccessToken;
-        decodedAccessToken = jwtUtils.verifyToken(
-          accessToken!,
-          process.env.JWT_ACCESS_SECRET as string,
-        );
-      }
+  let shouldClearCookies = false;
+
+  /*
+   * Access token expired or invalid,
+   * but refresh token is still valid.
+   */
+  if (
+    !decodedAccessToken?.success &&
+    decodedRefreshToken?.success &&
+    refreshToken
+  ) {
+    refreshedAccessToken = await refreshAccessToken(refreshToken);
+
+    if (refreshedAccessToken && accessSecret) {
+      accessToken = refreshedAccessToken;
+
+      decodedAccessToken = jwtUtils.verifyToken(
+        refreshedAccessToken,
+        accessSecret,
+      );
+
+      /*
+       * Make the refreshed token available
+       * to the current request.
+       */
+      request.cookies.set("accessToken", refreshedAccessToken);
+    } else {
+      accessToken = undefined;
+      decodedAccessToken = null;
+      shouldClearCookies = true;
     }
-
-  let userRole = null;
-
-  // console.log(decodedAccessToken?.success, "decodedAccessToken?.success");
-
-  if (!decodedAccessToken?.success) {
-    cookieStore.delete("accessToken");
   }
+
+  /*
+   * Access token is invalid and no valid
+   * refresh operation succeeded.
+   */
+  if (accessToken && !decodedAccessToken?.success) {
+    accessToken = undefined;
+    shouldClearCookies = true;
+  }
+
+  let userRole: string | null = null;
 
   if (decodedAccessToken?.success && decodedAccessToken.data) {
-    userRole = (decodedAccessToken.data as JwtPayload).role;
+    userRole = (decodedAccessToken.data as JwtPayload).role || null;
   }
 
-  if (accessToken && AUTH_ROUTES.includes(pathName)) {
-    if (userRole === "ADMIN") {
-      return NextResponse.redirect(new URL("/admin-dashboard", request.url));
-    } else if (userRole === "TECHNICIAN") {
-      return NextResponse.redirect(
-        new URL("/technician-dashboard", request.url),
-      );
-    } else if (userRole === "CUSTOMER") {
-      return NextResponse.redirect(new URL("/dashboard", request.url));
+  const isPublicRoute = isMatchingRoute(pathname, PUBLIC_ROUTES);
+
+  const isAuthRoute = isMatchingRoute(pathname, AUTH_ROUTES);
+
+  let response: NextResponse;
+
+  /*
+   * Logged-in users should not revisit
+   * login or registration pages.
+   */
+  if (accessToken && isAuthRoute) {
+    const dashboardPath = getDashboardPath(userRole);
+
+    if (dashboardPath) {
+      response = NextResponse.redirect(new URL(dashboardPath, request.url));
+
+      if (refreshedAccessToken) {
+        setAccessTokenCookie(response, refreshedAccessToken);
+      }
+
+      return response;
     }
   }
 
-    const isPublicRoute = PUBLIC_ROUTES.some(
-      (route) => pathName === route || pathName.startsWith(route + "/"),
-    );
-
-  const isAuthRoute = AUTH_ROUTES.some(
-    (route) => pathName === route || pathName.startsWith(route + "/"),
-  );
-
+  /*
+   * Unauthenticated users attempting to
+   * access a protected route.
+   */
   if (!accessToken && !isPublicRoute && !isAuthRoute) {
     const loginUrl = new URL("/login", request.url);
 
-    loginUrl.searchParams.set("redirectTo", pathName);
+    loginUrl.searchParams.set(
+      "redirectTo",
+      `${pathname}${request.nextUrl.search}`,
+    );
 
-    return NextResponse.redirect(loginUrl);
+    response = NextResponse.redirect(loginUrl);
+
+    if (shouldClearCookies) {
+      clearAuthenticationCookies(response);
+    }
+
+    return response;
   }
 
-  if (pathName.startsWith("/dashboard") && userRole !== "CUSTOMER") {
-    return NextResponse.redirect(new URL("/not-found", request.url));
-  } else if (pathName.startsWith("/admin-dashboard") && userRole !== "ADMIN") {
-    return NextResponse.redirect(new URL("/not-found", request.url));
-  } else if (
-    pathName.startsWith("/technician-dashboard") &&
+  /*
+   * Role-based dashboard protection.
+   */
+  if (pathname.startsWith("/dashboard") && userRole !== "CUSTOMER") {
+    response = NextResponse.redirect(new URL("/not-found", request.url));
+
+    if (refreshedAccessToken) {
+      setAccessTokenCookie(response, refreshedAccessToken);
+    }
+
+    return response;
+  }
+
+  if (pathname.startsWith("/admin-dashboard") && userRole !== "ADMIN") {
+    response = NextResponse.redirect(new URL("/not-found", request.url));
+
+    if (refreshedAccessToken) {
+      setAccessTokenCookie(response, refreshedAccessToken);
+    }
+
+    return response;
+  }
+
+  if (
+    pathname.startsWith("/technician-dashboard") &&
     userRole !== "TECHNICIAN"
   ) {
-    return NextResponse.redirect(new URL("/not-found", request.url));
+    response = NextResponse.redirect(new URL("/not-found", request.url));
+
+    if (refreshedAccessToken) {
+      setAccessTokenCookie(response, refreshedAccessToken);
+    }
+
+    return response;
   }
 
-  //   if (pathName === "/premium") {
-  //     const subscriptionStatus = await getSubscriptionStatus();
-  //     const isActive = Boolean(
-  //       subscriptionStatus?.success && subscriptionStatus.data?.isSubscribed,
-  //     );
+  response = NextResponse.next();
 
-  //     if (!isActive) {
-  //       return NextResponse.redirect(new URL("/payment", request.url));
-  //     }
-  //   }
+  /*
+   * Send a successfully refreshed access
+   * token back to the browser.
+   */
+  if (refreshedAccessToken) {
+    setAccessTokenCookie(response, refreshedAccessToken);
+  }
 
-  return NextResponse.next();
+  if (shouldClearCookies) {
+    clearAuthenticationCookies(response);
+  }
+
+  return response;
 }
-
-// Alternatively, you can use a default export:
-// export default function proxy(request: NextRequest) { ... }
 
 export const config = {
   matcher: [
-    // '/dashboard/:path*',
-    // '/admin-dashboard/:path*',
-    "/((?!api|_next/static|favicon.ico|_next/image|.*\\.png$).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|.*\\..*).*)",
   ],
 };

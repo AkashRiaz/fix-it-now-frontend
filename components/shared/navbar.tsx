@@ -8,6 +8,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
 import {
   Sheet,
   SheetClose,
@@ -190,10 +191,20 @@ export function Navbar({ user }: NavbarProps) {
                   </div>
 
                   {!user?.success && (
-                    <div className="border-t p-4">
+                    <div className="space-y-3 border-t p-4">
                       <SheetClose asChild>
                         <Button asChild className="w-full rounded-xl">
                           <Link href="/login">Login</Link>
+                        </Button>
+                      </SheetClose>
+
+                      <SheetClose asChild>
+                        <Button
+                          asChild
+                          variant="outline"
+                          className="w-full rounded-xl"
+                        >
+                          <Link href="/register">Create Account</Link>
                         </Button>
                       </SheetClose>
                     </div>
@@ -302,13 +313,24 @@ export function Navbar({ user }: NavbarProps) {
           {/* Right section */}
           <div className="flex items-center gap-2 sm:gap-3">
             {!user?.success ? (
-              <Button
-                asChild
-                size="sm"
-                className="rounded-full px-4 font-semibold shadow-sm sm:px-6"
-              >
-                <Link href="/login">Login</Link>
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  asChild
+                  size="sm"
+                  variant="outline"
+                  className="hidden rounded-full px-4 font-semibold sm:inline-flex"
+                >
+                  <Link href="/register">Register</Link>
+                </Button>
+
+                <Button
+                  asChild
+                  size="sm"
+                  className="rounded-full px-4 font-semibold shadow-sm sm:px-6"
+                >
+                  <Link href="/login">Login</Link>
+                </Button>
+              </div>
             ) : (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
